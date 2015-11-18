@@ -2,15 +2,17 @@ from requests import get
 import xmltodict
 import json
 
+
 def primo_get(document_id):
     """
-    Get a record from primo by document id
+    Get a record from primo by doximcument id
     :param document_id:
     :return: a json representation of the record
     """
     url = "http://primo.nli.org.il/PrimoWebServices/xservice/search/fullview?institution=NNL&docId=" + document_id + "&json=true"
     top = get(url).json()
     return top['SEGMENTS']['JAGROOT']['RESULT']['DOCSET']['DOC']['PrimoNMBib']['record']
+
 
 def primo_search(search_term):
     """
@@ -22,6 +24,7 @@ def primo_search(search_term):
     top = get(url).json()
     return top['sear:SEGMENTS']['sear:JAGROOT']['sear:RESULT']
 
+
 def file_get(file_name):
     """
     For debug purposes
@@ -30,3 +33,45 @@ def file_get(file_name):
     """
     f = open(file_name, "r").read()
     return json.dumps(xmltodict.parse(f)['record'])
+
+
+class Results:
+    _SEARCH_URL = \
+        'http://primo.nli.org.il/PrimoWebServices/xservice/search/brief?institution=NNL&query=any,contains,"{}"' \
+        '&indx={}&bulkSize={}&json=true'
+
+    def __init__(self, query, count):
+        self.count = count
+        self.query = query
+        self.index = 0
+        self.page = 1
+        self.results = self._get_results()
+
+    def __iter__(self):
+        return self
+
+    def __next__(self):
+        if self.index < self.count:
+            res = self.results[self.index]
+            self.index += 1
+            return res
+        self.page += 1
+        self.index = 0
+        try:
+            self.results = self._get_results()
+        except StopIteration:
+            raise StopIteration
+        return self.__next__()
+
+    def _get_results(self):
+        return [item['PrimoNMBib']['record']['control']['recordid'] for item in
+                self._search()['sear:SEGMENTS']['sear:JAGROOT']['sear:RESULT']['sear:DOCSET']['sear:DOC']]
+
+    def _search(self):
+        res = get(Results._SEARCH_URL.format(self.query, 1 + (self.page - 1) * self.count, self.count))
+        if res.status_code == 500:
+            raise StopIteration()
+        return res.json()
+
+
+
