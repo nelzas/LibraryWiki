@@ -26,7 +26,7 @@ def create_page_from_dictionary(item_dict):
         title = item_dict['sort']['title']
     except:
         title = display['title']
-    creator = display['creator']
+    creator = person_name(display['creator'])
     creationdate = display.get('creationdate')
     ispartof = display.get('ispartof')
     performed_by = display.get('lds35') # list
