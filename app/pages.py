@@ -3,13 +3,14 @@ from app.wiki import create_wiki_page, create_redirect_wiki_page
 LIST_ITEM = "* {} : {}\n"
 ALEF_LINK = "http://aleph.nli.org.il/F?func=direct&local_base={}&doc_number={}"
 
-def person_name(name):
+def person_name(primo_person_name):
     """
-    Convert "last, first, year" to "first last" (year is optional
+    Convert "last, first, year" to "first last" (year is optional)
     :param name: person name as "last, first, other"
     :return: first last
     """
-
+    splitted = primo_person_name.split(", ",2)
+    return splitted[1] + " " + splitted[0]
 
 def create_page_from_dictionary(item_dict):
     """
