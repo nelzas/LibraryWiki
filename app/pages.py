@@ -2,19 +2,24 @@ from app.wiki import create_wiki_page, create_redirect_wiki_page
 from app.__init__ import *
 import re
 
+CR = "\n"
 LIST_ITEM = "* {} : {}\n"
 ALEF_LINK = "http://aleph.nli.org.il/F?func=direct&local_base={}&doc_number={}"
-WIKI_LINK = "[[{}|{}]]" # first the link then the display text
-AUTHORITY_ID_PATTERN = ".*\$\$E(.*)\$\$I(.*)\$\$P" # e.g. "$$Dרכטר, יוני, 1951-$$Eרכטר, יוני, 1951-$$INNL10000110663$$PY M"
+WIKI_LINK = "[[{}|{}]]"  # first the link then the display text
+AUTHORITY_ID_PATTERN = ".*\$\$E(.*)\$\$I(.*)\$\$P"  # e.g. "$$Dרכטר, יוני, 1951-$$Eרכטר, יוני, 1951-$$INNL10000110663$$PY M"
 
 def str_to_list(str_or_list):
+    if str_to_list is None:
+        return None
     if type(str_or_list) is str:
         return [str_or_list]
     else:
         return str_or_list
 
+
 def comma_and(line):
     return ' ו'.join(line.rsplit(', ', maxsplit=1))
+
 
 def entries_to_authority_id(browse_entries):
     authority_dictionary = {}
@@ -23,6 +28,7 @@ def entries_to_authority_id(browse_entries):
         if match:
             authority_dictionary[match.group(1)] = match.group(2)[5:]
     return authority_dictionary
+
 
 def person_name(persons_to_id, primo_person_name):
     """
@@ -34,12 +40,13 @@ def person_name(persons_to_id, primo_person_name):
     if not link:
         person_name_no_role = primo_person_name[:primo_person_name.rfind(" ")]
         link = persons_to_id.get(person_name_no_role)
-    splitted = primo_person_name.split(", ",2)
+    splitted = primo_person_name.split(", ", 2)
     display_name = splitted[1] + " " + splitted[0]
     if link:
         return WIKI_LINK.format(link, display_name)
     else:
         return display_name
+
 
 def trim(line):
     """
@@ -52,6 +59,7 @@ def trim(line):
     while clean_line and not clean_line[-1].isalnum() and not clean_line[-1] == ")":
         clean_line = clean_line[:-1]
     return clean_line
+
 
 def create_page_from_dictionary(item_dict, debug=None):
     """
@@ -70,7 +78,7 @@ def create_page_from_dictionary(item_dict, debug=None):
     item_type = display['type']
 
     try:
-        display_type = type_dict[item_type][1] # hebrew type as a definite article, e.g. כתב העת
+        display_type = type_dict[item_type][1]  # hebrew type as a definite article, e.g. כתב העת
         display_type += " "
     except Exception as e:
         display_type = ""
@@ -85,9 +93,16 @@ def create_page_from_dictionary(item_dict, debug=None):
         creator = ", ".join(set([person_name(authors_to_id, creator.strip()) for creator in creators]))
         creator = comma_and(creator)
 
+    summary = display.get('lds20')
+
+    comments = str_to_list(display.get('lds05'))
+    comments_section = None
+    if comments:
+        comments_section = CR.join(["* " + comment for comment in comments])
+
     creationdate = display.get('creationdate')
     ispartof = display.get('ispartof')
-    performed_by = display.get('lds35') # list
+    performed_by = display.get('lds35')  # list
     performed_by = str_to_list(performed_by)
 
     performed_by_str = None
@@ -101,14 +116,18 @@ def create_page_from_dictionary(item_dict, debug=None):
     content += "{}'''{}''' {} על ידי {}".format(display_type, title, creation_verb, creator)
     if (creationdate):
         content += " בשנת {}".format(creationdate)
-    content += "\n"
+    content += CR
+    if summary:
+        content += CR + summary + CR
     content += "==פרטים כלליים==\n"
     if (performed_by_str):
         content += LIST_ITEM.format("שם מבצע", performed_by_str)
     if (ispartof):
         content += LIST_ITEM.format("מתוך", ispartof)
+    if comments_section:
+        content += comments_section
     content += "==מידע נוסף==\n"
-    content += "\n"
+    content += CR
     content += LIST_ITEM.format("מקור", source)
     content += "* מספר מערכת: [{} {}]\n".format(lib_link, sourcerecordid)
     content += "== קישורים נוספים ==\n"
@@ -116,7 +135,8 @@ def create_page_from_dictionary(item_dict, debug=None):
     content += "* [{} הפריט בקטלוג הספריה]\n".format(alef_link)
 
     if not debug:
-        create_redirect_wiki_page(page_name=title, redirect_to=document_id, summary="Creating redirect page for {}".format(document_id))
+        create_redirect_wiki_page(page_name=title, redirect_to=document_id,
+                                  summary="Creating redirect page for {}".format(document_id))
         create_wiki_page(page_name=document_id, summary="Created from primo", content=content)
 
     return content
