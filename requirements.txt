@@ -1,7 +1,7 @@
 decorator==4.0.4
 ipython==4.0.0
 ipython-genutils==0.1.0
-mwclient==0.7.2
+mwclient==0.8.0.dev1
 path.py==8.1.2
 pexpect==4.0.1
 pickleshare==0.5
