@@ -64,14 +64,13 @@ class Results:
         return self.__next__()
 
     def _get_results(self):
-        return [(item['PrimoNMBib']['record']['control']['recordid'], item['PrimoNMBib']['record']['display']) for item
-                in self._search()['sear:SEGMENTS']['sear:JAGROOT']['sear:RESULT']['sear:DOCSET']['sear:DOC']]
+        return [item['PrimoNMBib']['record'] for item in self._search()['sear:DOC']]
 
     def __len__(self):
-        return int(self._search()['sear:SEGMENTS']['sear:JAGROOT']['sear:RESULT']['sear:DOCSET']['@TOTALHITS'])
+        return int(self._search()['@TOTALHITS'])
 
     def _search(self):
         res = get(Results._SEARCH_URL.format(self.query, 1 + (self.page - 1) * self.count, self.count))
         if res.status_code == 500:
             raise StopIteration
-        return res.json()
+        return res.json()['sear:SEGMENTS']['sear:JAGROOT']['sear:RESULT']['sear:DOCSET']
