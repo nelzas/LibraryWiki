@@ -77,20 +77,23 @@ def create_page_from_dictionary(item_dict, debug=None):
         print("Unrecognized type '{}'".format(item_type))
 
     creation_verb = type_dict[item_type][2]
-    creators = display['creator'].split(";")
-    authors_to_id = entries_to_authority_id(str_to_list(item_dict['browse']['author']))
-    creator = ", ".join([person_name(authors_to_id, creator.strip()) for creator in creators])
-    creator = comma_and(creator)
+    creators_field = display.get('creator')
+    creator = None
+    if creators_field:
+        authors_to_id = entries_to_authority_id(str_to_list(item_dict['browse']['author']))
+        creators = creators_field.split(";")
+        creator = ", ".join(set([person_name(authors_to_id, creator.strip()) for creator in creators]))
+        creator = comma_and(creator)
 
     creationdate = display.get('creationdate')
     ispartof = display.get('ispartof')
     performed_by = display.get('lds35') # list
     performed_by = str_to_list(performed_by)
-    # TODO: performed by should be link(s)
+
+    performed_by_str = None
     if performed_by:
         performed_by_str = ", ".join(person_name(authors_to_id, performer) for performer in performed_by)
-    else:
-        performed_by_str = None
+
     source = display['source']
     lib_link = display['lds21']
 
