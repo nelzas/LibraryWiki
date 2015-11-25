@@ -1,17 +1,45 @@
 from app.wiki import create_wiki_page, create_redirect_wiki_page
 from app.__init__ import *
+import re
 
 LIST_ITEM = "* {} : {}\n"
 ALEF_LINK = "http://aleph.nli.org.il/F?func=direct&local_base={}&doc_number={}"
+WIKI_LINK = "[[{}|{}]]" # first the link then the display text
+AUTHORITY_ID_PATTERN = ".*\$\$E(.*)\$\$I(.*)\$\$P" # e.g. "$$Dרכטר, יוני, 1951-$$Eרכטר, יוני, 1951-$$INNL10000110663$$PY M"
 
-def person_name(primo_person_name):
+def str_to_list(str_or_list):
+    if type(str_or_list) is str:
+        return [str_or_list]
+    else:
+        return str_or_list
+
+def comma_and(line):
+    return ' ו'.join(line.rsplit(', ', maxsplit=1))
+
+def entries_to_authority_id(browse_entries):
+    authority_dictionary = {}
+    for author in browse_entries:
+        match = re.search(AUTHORITY_ID_PATTERN, author)
+        if match:
+            authority_dictionary[match.group(1)] = match.group(2)[5:]
+    return authority_dictionary
+
+def person_name(persons_to_id, primo_person_name):
     """
     Convert "last, first, year" to "first last" (year is optional)
     :param name: person name as "last, first, other"
     :return: first last
     """
+    link = persons_to_id.get(primo_person_name)
+    if not link:
+        person_name_no_role = primo_person_name[:primo_person_name.rfind(" ")]
+        link = persons_to_id.get(person_name_no_role)
     splitted = primo_person_name.split(", ",2)
-    return splitted[1] + " " + splitted[0]
+    display_name = splitted[1] + " " + splitted[0]
+    if link:
+        return WIKI_LINK.format(link, display_name)
+    else:
+        return display_name
 
 def trim(line):
     """
@@ -49,15 +77,20 @@ def create_page_from_dictionary(item_dict, debug=None):
         print("Unrecognized type '{}'".format(item_type))
 
     creation_verb = type_dict[item_type][2]
-    creator = person_name(display['creator'])
+    creators = display['creator'].split(";")
+    authors_to_id = entries_to_authority_id(str_to_list(item_dict['browse']['author']))
+    creator = ", ".join([person_name(authors_to_id, creator.strip()) for creator in creators])
+    creator = comma_and(creator)
+
     creationdate = display.get('creationdate')
     ispartof = display.get('ispartof')
     performed_by = display.get('lds35') # list
+    performed_by = str_to_list(performed_by)
     # TODO: performed by should be link(s)
-    if type(performed_by) is str:
-        performed_by = person_name(performed_by)
-    if type(performed_by) is list:
-        performed_by = ", ".join(person_name(performer) for performer in performed_by)
+    if performed_by:
+        performed_by_str = ", ".join(person_name(authors_to_id, performer) for performer in performed_by)
+    else:
+        performed_by_str = None
     source = display['source']
     lib_link = display['lds21']
 
@@ -67,8 +100,8 @@ def create_page_from_dictionary(item_dict, debug=None):
         content += " בשנת {}".format(creationdate)
     content += "\n"
     content += "==פרטים כלליים==\n"
-    if (performed_by):
-        content += LIST_ITEM.format("שם מבצע", performed_by)
+    if (performed_by_str):
+        content += LIST_ITEM.format("שם מבצע", performed_by_str)
     if (ispartof):
         content += LIST_ITEM.format("מתוך", ispartof)
     content += "==מידע נוסף==\n"
