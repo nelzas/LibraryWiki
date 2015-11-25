@@ -1,4 +1,18 @@
-type_dict = {'dissertation', 'manuscript', 'image', 'lyrics', 'archive', 'reccomm', 'score_and_lyrics', 'article', 'book', 'recethno', 'audio', 'score_manuscript', 'ebook', 'journal'}
-
-def f():
-    pass
+# type, definitive artice type, creation verb
+type_dict = {
+    'dissertation': ('חיבור מדעי', 'החיבור המדעי', 'נכתב',),
+    'manuscript': ('כתב יד', 'כתב היד', 'נכתב',),
+    'image': ('תמונה', 'התמונה', True,),
+    'lyrics': ('מילןת שיר', 'מילות השיר', 'נכתבו'),
+    'archive': ('ארכיון', 'הארכיון', 'נוצר?',),
+    'reccomm': ('שיר', 'השיר', 'נכתב',),
+    'score_and_lyrics': ('שיר', 'השיר (מילים ותווים)', 'נכתב',),
+    'article': ('מאמר', 'המאמר', 'נכתב',),
+    'book': ('ספר', 'הספר', 'נכתב',),
+    'recethno': ('הקלטה אתנוגרפית', 'ההקלטה האתנוגרפית', 'נוצרה',),
+    'audio': ('הקלטה', 'ההקלטה', 'נוצרה',),
+    'score_manuscript': ('כתב יד (תווים)', 'כתב היד (תווים)', 'נכתב',),
+    'ebook': ('ספר אלקטרוני', 'הספר האלקטרוני', 'נכתב',),
+    'journal': ('כתב עת', 'כתב העת', 'נכתב',),
+    'website': {'אתר אינטרנט', 'אתר האינטרנט', 'נוצר'},
+}
