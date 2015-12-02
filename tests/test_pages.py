@@ -17,9 +17,12 @@ class MyTestCase(unittest.TestCase):
         self.assertEqual(no_commas, comma_and(no_commas))
 
     def test_trim(self):
-        non_trim = "abc ... (def) ..."
+        non_trimmed = "abc ... (def) ..."
         trimmed = "abc ... (def)"
-        self.assertEqual(trimmed, trim(non_trim))
+        self.assertEqual(trimmed, trim(non_trimmed))
+        non_trimmed = 'abc "def" ..#$'
+        trimmed = 'abc "def"'
+        self.assertEqual(trimmed, trim(non_trimmed))
 
 if __name__ == '__main__':
     unittest.main()

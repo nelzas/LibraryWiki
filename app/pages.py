@@ -49,11 +49,14 @@ def person_name(persons_to_id, primo_person_name):
     :param name: person name as "last, first, other"
     :return: first last
     """
+    wiki_person_name = primo_person_name
     link = persons_to_id.get(primo_person_name)
     if not link:
         person_name_no_role = primo_person_name[:primo_person_name.rfind(" ")]
         link = persons_to_id.get(person_name_no_role)
-    display_name = simple_person_name(primo_person_name)
+        if link:
+            wiki_person_name = person_name_no_role
+    display_name = simple_person_name(wiki_person_name)
     if link:
         return WIKI_LINK.format(link, display_name)
     else:
@@ -62,13 +65,13 @@ def person_name(persons_to_id, primo_person_name):
 
 def trim(line):
     """
-    Trim non-alpha characters from the end of the line. Leave parentheses.
+    Trim non-alpha characters from the end of the line. Leave parentheses, quotes.
     For example trime("abc def..") returns "abc def"
     :param line: a string
     :return: the same string without trailing non-alpha characters
     """
     clean_line = line
-    while clean_line and not clean_line[-1].isalnum() and not clean_line[-1] == ")":
+    while clean_line and not clean_line[-1].isalnum() and not clean_line[-1] in '")':
         clean_line = clean_line[:-1]
     return clean_line
 
@@ -127,6 +130,7 @@ def create_page_from_dictionary(item_dict, debug=None):
 
     content = "{{DISPLAYTITLE:%s}}\n" % title
     content += "{}'''{}''' {} על ידי {}".format(display_type, title, creation_verb, creator)
+
     if (creationdate):
         content += " בשנת {}".format(creationdate)
     content += CR
