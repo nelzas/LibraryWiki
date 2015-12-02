@@ -1,4 +1,4 @@
-from app.pages import simple_person_name, comma_and
+from app.pages import simple_person_name, comma_and, trim
 
 import unittest
 
@@ -15,6 +15,11 @@ class MyTestCase(unittest.TestCase):
         self.assertEqual(result, comma_and(comma_separated))
         no_commas = "מלכת שבא"
         self.assertEqual(no_commas, comma_and(no_commas))
+
+    def test_trim(self):
+        non_trim = "abc ... (def) ..."
+        trimmed = "abc ... (def)"
+        self.assertEqual(trimmed, trim(non_trim))
 
 if __name__ == '__main__':
     unittest.main()

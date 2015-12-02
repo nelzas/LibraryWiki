@@ -77,7 +77,8 @@ def create_page_from_dictionary(item_dict, debug=None):
     """
     create a wikipedia page from a dictionary that describes a primo item
     :param item_dict: primo item as a dictionary/json
-    :return:
+    :param debug: if not debug then actually create the pages
+    :return: page content in wiki markup
     """
     document_id = item_dict['control']['recordid']
     sourcerecordid = item_dict['control']['sourcerecordid']
