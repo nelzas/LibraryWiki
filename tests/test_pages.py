@@ -1,4 +1,4 @@
-from app.pages import simple_person_name, comma_and, trim
+from app.pages import simple_person_name, comma_and, trim, is_hebrew
 
 import unittest
 
@@ -23,6 +23,12 @@ class MyTestCase(unittest.TestCase):
         non_trimmed = 'abc "def" ..#$'
         trimmed = 'abc "def"'
         self.assertEqual(trimmed, trim(non_trimmed))
+
+    def test_is_hebrew(self):
+        self.assertTrue(is_hebrew("שי"))
+        self.assertTrue(is_hebrew("Moshe משה"))
+        self.assertFalse(is_hebrew("Shai"))
+
 
 if __name__ == '__main__':
     unittest.main()

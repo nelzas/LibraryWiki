@@ -6,7 +6,7 @@ CR = "\n"
 LIST_ITEM = "* {} : {}\n"
 ALEF_LINK = "http://aleph.nli.org.il/F?func=direct&local_base={}&doc_number={}"
 WIKI_LINK = "[[{}|{}]]"  # first the link then the display text
-AUTHORITY_ID_PATTERN = ".*\$\$E(.*)\$\$I(.*)\$\$P"  # e.g. "$$Dרכטר, יוני, 1951-$$Eרכטר, יוני, 1951-$$INNL10000110663$$PY M"
+AUTHORITY_ID_PATTERN = "\$\$D(.*)\$\$E(.*)\$\$I(.*)\$\$P"  # e.g. "$$Dרכטר, יוני, 1951-$$Eרכטר, יוני, 1951-$$INNL10000110663$$PY M"
 
 def str_to_list(str_or_list):
     if str_to_list is None:
@@ -36,7 +36,7 @@ def entries_to_authority_id(browse_entries):
     for author in browse_entries:
         match = re.search(AUTHORITY_ID_PATTERN, author)
         if match:
-            authority_dictionary[match.group(1)] = match.group(2)[5:]
+            authority_dictionary[match.group(2)] = match.group(3)[5:]
     return authority_dictionary
 
 def simple_person_name(primo_person_name):
@@ -62,6 +62,8 @@ def person_name(persons_to_id, primo_person_name):
     else:
         return display_name
 
+def is_hebrew(line):
+    return re.match(".*[א-ת].*", line) is not None
 
 def trim(line):
     """
@@ -75,12 +77,34 @@ def trim(line):
         clean_line = clean_line[:-1]
     return clean_line
 
+def handle_categories(browse, create_category_pages):
+    subjects = {}
+    if browse.get('subject'):
+        subjects = str_to_list(browse['subject']);
+    nnl_to_subject = {}
+    for subject in subjects:
+        match = re.search(AUTHORITY_ID_PATTERN, subject)
+        if match:
+            nnl = match.group(3)[5:]
+            term = match.group(1)
+            if is_hebrew(term): # Hebrew term
+                nnl_to_subject[nnl] = term
 
-def create_page_from_dictionary(item_dict, debug=None):
+    result = ""
+    for subject in nnl_to_subject.values():
+        category_page_name = "קטגוריה:{}".format(subject)
+        result += CR + '[[{}]]'.format(category_page_name)
+        if create_category_pages:
+            create_wiki_page(category_page_name,"Creating empty category page", "")
+
+    return result
+
+def create_page_from_dictionary(item_dict, debug=None, create_category_pages=False):
     """
     create a wikipedia page from a dictionary that describes a primo item
     :param item_dict: primo item as a dictionary/json
     :param debug: if not debug then actually create the pages
+    :param create_category_pages: whether to create empty category pages when encountered
     :return: page content in wiki markup
     """
     document_id = item_dict['control']['recordid']
@@ -151,7 +175,11 @@ def create_page_from_dictionary(item_dict, debug=None):
     alef_link = ALEF_LINK.format(originalsourceid, sourcerecordid)
     content += "* [{} הפריט בקטלוג הספריה]\n".format(alef_link)
 
-    if not debug:
+    content += handle_categories(item_dict['browse'], create_category_pages)
+
+    if debug:
+        print(content)
+    else:
         create_redirect_wiki_page(page_name=title, redirect_to=document_id,
                                   summary="Creating redirect page for {}".format(document_id))
         create_wiki_page(page_name=document_id, summary="Created from primo", content=content)
