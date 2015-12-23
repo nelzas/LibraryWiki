@@ -20,8 +20,7 @@
 #      '680': 'notes',
 #      '681': 'biography',
 #      }
-
-
+from collections import OrderedDict
 import xmltodict
 import json
 
@@ -105,11 +104,22 @@ def parse_tag(tag, subfields):
         return tag, subfields['a']
 
 
+def to_list(item):
+    return item if type(item) is list else [item] or []
+
+
+def conv_dict(d):
+    return {field['@tag']: {
+        sub['@code']: [this_sub['#text'] for this_sub in to_list(field['subfield']) if
+                       this_sub['@code'] == sub['@code']]
+        for sub in to_list(field['subfield'])} for field in to_list(d['datafield'])}
+
+
 def db_auth():
     for record in get_authorities():
-        properties = {'id': record['controlfield'][2]['#text'], 'data': json.dumps(record)}
+        properties = {'id': record['controlfield'][2]['#text'], 'data': json.dumps(conv_dict(record))}
         if record.get('datafield'):
-            dat = record['datafield'] if type(record['datafield']) is list else [record['datafield']]
+            dat = to_list(record['datafield'])
             tags = [codes.get(data['@tag']) or data['@tag'] for data in dat]
             if codes['100'] in tags:
                 properties['type'] = 'person'
@@ -126,7 +136,3 @@ def db_auth():
                     if info:
                         properties[info[0]] = info[1]
                 yield properties
-
-
-for a in db_auth():
-    print(a)

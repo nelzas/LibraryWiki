@@ -20,6 +20,7 @@ def set_authorities():
     for authority, _ in zip(authorities.db_auth(), range(100)):
         m = graph.merge_one("Authority", "id", authority["id"])
         m.properties.update(**authority)
+        m.labels.add('Person')
         m.push()
 
 set_authorities()
