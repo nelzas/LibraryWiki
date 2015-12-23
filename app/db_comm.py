@@ -1,10 +1,10 @@
 import py2neo
 from app import primo_comm
 from app import authorities
+from app.settings import *
 
-py2neo.authenticate("104.155.27.166:7474", "neo4j", "R99R")
-graph = py2neo.Graph("http://104.155.27.166:7474/db/data/")
-
+py2neo.authenticate(NEO4J_URL, NEO4J_USER, NEO4J_PASSWORD)
+graph = py2neo.Graph('http://' + NEO4J_URL + NEO4J_GRAPH)
 
 def set_records():
     # graph.schema.create_uniqueness_constraint("Record", "recordid")
