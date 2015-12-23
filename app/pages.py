@@ -8,6 +8,32 @@ ALEF_LINK = "http://aleph.nli.org.il/F?func=direct&local_base={}&doc_number={}"
 WIKI_LINK = "[[{}|{}]]"  # first the link then the display text
 AUTHORITY_ID_PATTERN = "\$\$D(.*)\$\$E(.*)\$\$I(.*)\$\$P"  # e.g. "$$Dרכטר, יוני, 1951-$$Eרכטר, יוני, 1951-$$INNL10000110663$$PY M"
 
+month_num_to_heb_name = {
+    '01': 'ינואר',
+    '02': 'פברואר',
+    '03': 'מרץ',
+    '04': 'אפריל',
+    '05': 'מאי',
+    '06': 'יוני',
+    '07': 'יולי',
+    '08': 'אוגוסט',
+    '09': 'ספטמבר',
+    '10': 'אוקטובר',
+    '11': 'נובמבר',
+    '12': 'דצמבר',
+}
+
+def date8_to_heb_date(date8):
+    """
+    convert 8 digit date to date in hebrew
+    :param data8: 8 digits date, e.g. 18861006
+    :return: date in Hebrew, e.g. ״6 באוקטבר 1886״
+    """
+    year = date8[0:4]
+    month = month_num_to_heb_name[date8[4:6]]
+    day = str(int(date8[6:8]))
+    return "{} ב{} {}".format(day, month, year)
+
 def str_to_list(str_or_list):
     if str_to_list is None:
         return None
@@ -95,7 +121,7 @@ def handle_categories(browse, create_category_pages):
         category_page_name = "קטגוריה:{}".format(subject)
         result += CR + '[[{}]]'.format(category_page_name)
         if create_category_pages:
-            create_wiki_page(category_page_name,"Creating empty category page", "")
+            create_wiki_page(category_page_name, "Creating empty category page", "")
 
     return result
 

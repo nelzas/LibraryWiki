@@ -1,4 +1,5 @@
-from app.pages import simple_person_name, comma_and, trim, is_hebrew
+from app.pages import simple_person_name, comma_and, trim, is_hebrew, date8_to_heb_date
+
 
 import unittest
 
@@ -29,6 +30,11 @@ class MyTestCase(unittest.TestCase):
         self.assertTrue(is_hebrew("Moshe משה"))
         self.assertFalse(is_hebrew("Shai"))
 
+    def test_heb_date(self):
+        date8 = "18871005"
+        result = "5 באוקטובר 1887"
+        print(date8_to_heb_date(date8))
+        self.assertEqual(result, date8_to_heb_date(date8))
 
 if __name__ == '__main__':
     unittest.main()
