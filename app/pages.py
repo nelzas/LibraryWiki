@@ -75,6 +75,8 @@ def simple_person_name(primo_person_name):
     if primo_person_name[-1] == ",":
         primo_person_name = primo_person_name[:-1]
     splitted = primo_person_name.split(", ", 2)
+    if len(splitted) == 1:
+        return splitted[0]
     return splitted[1] + " " + splitted[0]
 
 def person_name(persons_to_id, primo_person_name):
