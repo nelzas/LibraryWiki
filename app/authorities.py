@@ -20,7 +20,8 @@
 #      '680': 'notes',
 #      '681': 'biography',
 #      }
-from collections import OrderedDict
+from collections import defaultdict
+
 import xmltodict
 import json
 
@@ -109,10 +110,17 @@ def to_list(item):
 
 
 def conv_dict(d):
-    return {field['@tag']: {
-        sub['@code']: [this_sub['#text'] for this_sub in to_list(field['subfield']) if
-                       this_sub['@code'] == sub['@code']]
-        for sub in to_list(field['subfield'])} for field in to_list(d['datafield'])}
+    tags = defaultdict(list)
+    if not d.get('datafield'):
+        return None
+
+    for tag in d['datafield']:
+        if not tag.get('subfield'):
+            continue
+        tags[tag['@tag']].append({k: v for k, v in tag.items() if k != '@tag' and k != 'subfield'})
+        for sub in to_list(tag['subfield']):
+            tags[tag['@tag']][-1][sub['@code']] = sub['#text']
+    return tags
 
 
 def db_auth():
@@ -126,12 +134,10 @@ def db_auth():
             elif codes['151'] in tags:
                 properties['type'] = 'location'
             else:
-                continue
+                pass
             if tags and dat[0].get('subfield'):
                 for i, tag in enumerate(tags):
-                    lstsub = dat[i].get('subfield')
-                    lstsub = lstsub if type(lstsub) is list else [lstsub]
-                    subfields = {sub['@code']: sub['#text'] for sub in lstsub}
+                    subfields = {sub['@code']: sub['#text'] for sub in to_list(dat[i].get('subfield'))}
                     info = parse_tag(tags[i], subfields)
                     if info:
                         properties[info[0]] = info[1]
