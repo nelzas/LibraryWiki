@@ -9,6 +9,15 @@ class MyTestCase(unittest.TestCase):
         primo_person_name = "חלפי, אברהם, 1904-1980"
         result = "אברהם חלפי"
         self.assertEqual(result, simple_person_name(primo_person_name))
+        primo_person_name = "אלון, תמר,"
+        result = "תמר אלון"
+        self.assertEqual(result, simple_person_name(primo_person_name))
+        primo_person_name = "מדונה"
+        result = "מדונה"
+        self.assertEqual(result, simple_person_name(primo_person_name))
+        primo_person_name = "מדונה,"
+        result = "מדונה"
+        self.assertEqual(result, simple_person_name(primo_person_name))
 
     def test_comma_and(self):
         comma_separated = "משה, אילנה, ברוך"
@@ -31,10 +40,9 @@ class MyTestCase(unittest.TestCase):
         self.assertFalse(is_hebrew("Shai"))
 
     def test_heb_date(self):
-        date8 = "18871005"
-        result = "5 באוקטובר 1887"
-        print(date8_to_heb_date(date8))
-        self.assertEqual(result, date8_to_heb_date(date8))
+        self.assertEqual("1887", date8_to_heb_date("1887"))
+        self.assertEqual("אוקטובר 1887", date8_to_heb_date("188710"))
+        self.assertEqual("5 באוקטובר 1887", date8_to_heb_date("18871005"))
 
 if __name__ == '__main__':
     unittest.main()
