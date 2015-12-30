@@ -31,10 +31,9 @@ class MyTestCase(unittest.TestCase):
         self.assertFalse(is_hebrew("Shai"))
 
     def test_heb_date(self):
-        date8 = "18871005"
-        result = "5 באוקטובר 1887"
-        print(date8_to_heb_date(date8))
-        self.assertEqual(result, date8_to_heb_date(date8))
+        self.assertEqual("1887", date8_to_heb_date("1887"))
+        self.assertEqual("אוקטובר 1887", date8_to_heb_date("188710"))
+        self.assertEqual("5 באוקטובר 1887", date8_to_heb_date("18871005"))
 
 if __name__ == '__main__':
     unittest.main()
