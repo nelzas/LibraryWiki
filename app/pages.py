@@ -29,11 +29,13 @@ def date8_to_heb_date(date8):
     :param data8: 8 digits date YYYYMMDD, e.g. 18861006, or 6 digit YYYYMM or 4 digits YYYY
     :return: date in Hebrew, e.g. ״6 באוקטבר 1886״
     """
+    if len(date8) == 0:
+        return ""
     year = date8[0:4]
-    if (len(date8) == 4):
+    if len(date8) == 4:
         return year
     month = month_num_to_heb_name[date8[4:6]]
-    if (len(date8) == 6):
+    if len(date8) == 6:
         return "{} {}".format(month, year)
     day = str(int(date8[6:8]))
     return "{} ב{} {}".format(day, month, year)
@@ -70,6 +72,8 @@ def entries_to_authority_id(browse_entries):
     return authority_dictionary
 
 def simple_person_name(primo_person_name):
+    if primo_person_name[-1] == ",":
+        primo_person_name = primo_person_name[:-1]
     splitted = primo_person_name.split(", ", 2)
     return splitted[1] + " " + splitted[0]
 

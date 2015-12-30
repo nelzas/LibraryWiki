@@ -9,6 +9,9 @@ class MyTestCase(unittest.TestCase):
         primo_person_name = "חלפי, אברהם, 1904-1980"
         result = "אברהם חלפי"
         self.assertEqual(result, simple_person_name(primo_person_name))
+        primo_person_name = "אלון, תמר,"
+        result = "תמר אלון"
+        self.assertEqual(result, simple_person_name(primo_person_name))
 
     def test_comma_and(self):
         comma_separated = "משה, אילנה, ברוך"
