@@ -13,6 +13,7 @@ template_birth_place = "מקום לידה="
 template_death_place = "מקום פטירה="
 template_address = "מקום מגורים="
 template_other_names = "כינויים נוספים="
+template_occupation = "מקצוע="
 
 def personality_name(record):
     return record['person_name_heb']
@@ -66,14 +67,15 @@ def create_page_from_node(person_node, debug=None, create_category_pages=False):
         .replace(template_birth_place, template_birth_place + birth_place) \
         .replace(template_death_place, template_death_place + death_place) \
         .replace(template_other_names, template_other_names + other_names_value) \
+        .replace(template_occupation, template_occupation + occupation) \
 
     content = "{{DISPLAYTITLE:%s}}\n" % person_name
 
     content += template
 
-    notes1 = record.get('678')
-    notes2 = record.get('680')
-    notes3 = record.get('681')
+    notes1 = record.get('670')
+    notes2 = record.get('678')
+    notes3 = record.get('680')
 
     notes = []
     for notes_i in (notes1, notes2, notes3):
