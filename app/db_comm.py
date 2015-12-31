@@ -20,10 +20,12 @@ def set_records():
 
 def set_authorities():
     # graph.schema.create_uniqueness_constraint("Authority", "id")
-    for authority, _ in zip(authorities.db_auth(), range(100)):
+    for authority, _ in zip(authorities.db_auth(), range(15000)):
         m = graph.merge_one("Authority", "id", authority["id"])
         m.properties.update(**authority)
-        m.labels.add('Person')
+        type = authority.get('type')
+        if type:
+            m.labels.add(type.title())
         m.push()
 
 
