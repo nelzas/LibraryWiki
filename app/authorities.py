@@ -53,6 +53,44 @@ codes = {
     '681': 'biography',
 }
 
+PUNCTUATION = ",.:!;?"
+BRACKETS = "<>"
+
+def remove_all(line, chars_to_remove):
+    clean_line = line
+    for char in chars_to_remove:
+        clean_line = clean_line.replace(char, "")
+    return clean_line
+
+def trim_last(line, chars_to_remove):
+    clean_line = line
+    while clean_line and clean_line[-1] in chars_to_remove:
+        clean_line = clean_line[:-1]
+    return clean_line
+
+
+def parse_name(subfields):
+    """
+    Rules:
+    Remove punctuation from end of tag 'a'
+    Remove all punctuation from tags 'b' and 'c'
+    Remoe all brackets "<" and ">" from all tags
+    :param subfields:
+    :return: person_name_lang, name where lang is subfield '9'
+    """
+    subfield_a = subfields.get('a') or ""
+    subfield_b = subfields.get('b') or ""
+    subfield_c = subfields.get('c') or ""
+
+    subfield_a = trim_last(subfield_a, PUNCTUATION)
+    subfield_a = remove_all(subfield_a, BRACKETS)
+    subfield_b = remove_all(subfield_b, PUNCTUATION + BRACKETS)
+    subfield_c = remove_all(subfield_c, PUNCTUATION + BRACKETS)
+
+    name = subfield_a + (" " if subfield_b else "") + subfield_b + (" " if subfield_c else "") + subfield_c
+    lang = subfields['9']
+    return "person_name_" + lang, name
+
 
 def parse_lang(tag, subfields):
     return "{}_{}".format(tag, subfields['9']), subfields['a']
@@ -95,7 +133,9 @@ def parse_address(subfields):
 
 
 def parse_tag(tag, subfields):
-    if tag == 'person_name' or tag == 'location_name':
+    if tag == 'person_name':
+        return parse_name(subfields)
+    if tag == 'location_name':
         return parse_lang(tag, subfields)
     if tag == 'life_span':
         return tag, parse_dates(subfields)
