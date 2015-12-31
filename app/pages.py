@@ -3,6 +3,7 @@ from app.__init__ import *
 import re
 
 CR = "\n"
+BR = "<br/>" + CR
 LIST_ITEM = "* {} : {}\n"
 ALEF_LINK = "http://aleph.nli.org.il/F?func=direct&local_base={}&doc_number={}"
 WIKI_LINK = "[[{}|{}]]"  # first the link then the display text
