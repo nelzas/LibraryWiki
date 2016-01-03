@@ -21,7 +21,6 @@
 #      '681': 'biography',
 #      }
 from collections import defaultdict
-
 import xmltodict
 import json
 
@@ -56,11 +55,13 @@ codes = {
 PUNCTUATION = ",.:!;?"
 BRACKETS = "<>"
 
+
 def remove_all(line, chars_to_remove):
     clean_line = line
     for char in chars_to_remove:
         clean_line = clean_line.replace(char, "")
     return clean_line
+
 
 def trim_last(line, chars_to_remove):
     clean_line = line
@@ -151,9 +152,6 @@ def to_list(item):
 
 def conv_dict(d):
     tags = defaultdict(list)
-    if not d.get('datafield'):
-        return None
-
     for tag in d['datafield']:
         if not tag.get('subfield'):
             continue
@@ -165,6 +163,8 @@ def conv_dict(d):
 
 def db_auth():
     for record in get_authorities():
+        if not record.get('datafield'):
+            continue
         properties = {'id': record['controlfield'][2]['#text'], 'data': json.dumps(conv_dict(record))}
         if record.get('datafield'):
             dat = to_list(record['datafield'])
