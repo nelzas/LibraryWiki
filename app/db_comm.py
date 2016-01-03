@@ -1,5 +1,3 @@
-import json
-
 import py2neo
 from app import primo_comm
 from app import authorities
@@ -36,7 +34,7 @@ def create_relationship(authorities, record, relation):
         return
     for authority in authorities:
         node = graph.merge_one("Authority", "id", authority)
-        graph.create(py2neo.Relationship(authority, relation, record))
+        graph.create(py2neo.Relationship(node, relation, record))
 
 
 def create_records_authorities_relationships():
