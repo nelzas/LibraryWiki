@@ -1,4 +1,6 @@
 import py2neo
+import re
+
 from app import primo_comm
 from app import authorities
 from app.settings import *
@@ -47,11 +49,12 @@ def create_records_authorities_relationships():
 
 
 def authorities_of_record(data):
+    authority_id_pattern = re.compile(r'INNL\d{11}\$\$')
+
     def extract_authority(key):
         if data.get(key):
-            authorities_set = {authority.split('$$')[-2][5:] for authority in data[key] if
-                               len(authority.split('$$')) > 1 and
-                               len(authority.split('$$')[-2]) > 5 and authority.split('$$')[-2][5:].isdigit()} or None
+            authorities_set = {authority_id_pattern.search(authority).group()[5:-2] for authority in data[key] if
+                               authority_id_pattern.search(authority)} or None
         else:
             authorities_set = None
         return authorities_set
