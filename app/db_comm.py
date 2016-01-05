@@ -1,9 +1,11 @@
 import py2neo
 import re
-
 from app import primo_comm
 from app import authorities
 from app.settings import *
+from py2neo.packages.httpstream import http
+
+http.socket_timeout = 9999
 
 py2neo.authenticate(NEO4J_URL, NEO4J_USER, NEO4J_PASSWORD)
 graph = py2neo.Graph('http://' + NEO4J_URL + NEO4J_GRAPH)
@@ -22,7 +24,7 @@ def set_records():
 
 def set_authorities():
     # graph.schema.create_uniqueness_constraint("Authority", "id")
-    for authority, _ in zip(authorities.db_auth(), range(15000)):
+    for authority, _ in zip(authorities.db_auth(), range(20000)):
         m = graph.merge_one("Authority", "id", authority["id"])
         m.properties.update(**authority)
         type = authority.get('type')
@@ -36,12 +38,14 @@ def create_relationship(authorities, record, relation):
         return
     for authority in authorities:
         node = graph.merge_one("Authority", "id", authority)
-        graph.create(py2neo.Relationship(node, relation, record))
+        graph.create_unique(py2neo.Relationship(node, relation, record))
 
 
 def create_records_authorities_relationships():
     records = graph.cypher.execute("match (n:Record) return n as node, n.data as data")
     for record in records:
+        if not record.data:
+            continue
         authors, subjects = authorities_of_record(eval(record.data)['browse'])
         create_relationship(authors, record.node, 'author_of')
         create_relationship(subjects, record.node, 'subject_of')
@@ -62,3 +66,12 @@ def authorities_of_record(data):
     authors_set = extract_authority('author')
     subjects_set = extract_authority('subject')
     return authors_set, subjects_set
+
+
+print("setting records...")
+set_records()
+print("setting authorities...")
+set_authorities()
+print("creating relationships...")
+create_records_authorities_relationships()
+print("done!")
