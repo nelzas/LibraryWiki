@@ -13,7 +13,7 @@ graph = py2neo.Graph('http://' + NEO4J_URL + NEO4J_GRAPH)
 
 def set_records():
     # graph.schema.create_uniqueness_constraint("Record", "recordid")
-    for result, _ in zip(primo_comm.Results("בן גוריון", 200), range(1000)):
+    for result, _ in zip(primo_comm.Results("בן גוריון", 200), range(100)):
         properties = {'recordid': result['control']['recordid'], 'data': str(result),
                       'title': result['display']['title']}
         m = graph.merge_one("Record", "recordid", properties['recordid'])
@@ -24,8 +24,8 @@ def set_records():
 
 def set_authorities():
     # graph.schema.create_uniqueness_constraint("Authority", "id")
-    for authority, _ in zip(authorities.db_auth(), range(20000)):
-        m = graph.merge_one("Authority", "id", authority["id"])
+    for authority, _ in zip(authorities.db_auth(), range(200)):
+        m = graph.merge_one("Authority", "id", '0' + authority["id"])
         m.properties.update(**authority)
         type = authority.get('type')
         if type:
@@ -53,15 +53,11 @@ def create_records_authorities_relationships():
 
 
 def authorities_of_record(data):
-    authority_id_pattern = re.compile(r'INNL\d{11}\$\$')
+    find_id = re.compile(r'INNL\d{11}\$\$').search
 
     def extract_authority(key):
-        if data.get(key):
-            authorities_set = {authority_id_pattern.search(authority).group()[5:-2] for authority in data[key] if
-                               authority_id_pattern.search(authority)} or None
-        else:
-            authorities_set = None
-        return authorities_set
+        return data.get(key) and {find_id(authority).group()[5:-2] for authority in data[key] if
+                                  find_id(authority)}
 
     authors_set = extract_authority('author')
     subjects_set = extract_authority('subject')
