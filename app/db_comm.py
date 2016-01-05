@@ -1,7 +1,7 @@
 import py2neo
 import re
 from app import primo_comm
-from app import authorities
+from app.authorities import db_auth
 from app.settings import *
 from py2neo.packages.httpstream import http
 
@@ -24,12 +24,12 @@ def set_records():
 
 def set_authorities():
     # graph.schema.create_uniqueness_constraint("Authority", "id")
-    for authority, _ in zip(authorities.db_auth(), range(200)):
+    for authority, _ in zip(db_auth(), range(200)):
         m = graph.merge_one("Authority", "id", '0' + authority["id"])
         m.properties.update(**authority)
-        type = authority.get('type')
-        if type:
-            m.labels.add(type.title())
+        type_of_record = authority.get('type')
+        if type_of_record:
+            m.labels.add(type_of_record.title())
         m.push()
 
 
@@ -52,12 +52,12 @@ def create_records_authorities_relationships():
     graph.push()
 
 
-def authorities_of_record(data):
+def authorities_of_record(authorities):
     find_id = re.compile(r'INNL\d{11}\$\$').search
 
-    def extract_authority(key):
-        return data.get(key) and {find_id(authority).group()[5:-2] for authority in data[key] if
-                                  find_id(authority)}
+    def extract_authority(relationship):
+        return authorities.get(relationship) and {find_id(authority).group()[5:-2] for authority in
+                                                  authorities[relationship] if find_id(authority)}
 
     authors_set = extract_authority('author')
     subjects_set = extract_authority('subject')
