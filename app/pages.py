@@ -136,6 +136,13 @@ def handle_categories(browse, create_category_pages):
 
     return result
 
+BAD = "<>[]{}"
+
+def clean_title(title):
+    for bad in BAD:
+        title = title.replace(bad, " ")
+    return title
+
 def create_page_from_dictionary(item_dict, debug=None, create_category_pages=False):
     """
     create a wikipedia page from a dictionary that describes a primo item
@@ -149,9 +156,9 @@ def create_page_from_dictionary(item_dict, debug=None, create_category_pages=Fal
     originalsourceid = item_dict['control']['originalsourceid']
     display = item_dict['display']
     try:
-        title = trim(item_dict['sort']['title'])
-    except:
         title = display['title']
+    except:
+        title = trim(item_dict['sort']['title'])
     item_type = display['type']
 
     try:
@@ -169,6 +176,8 @@ def create_page_from_dictionary(item_dict, debug=None, create_category_pages=Fal
         creators = creators_field.split(";")
         creator = ", ".join(set([person_name(authors_to_id, creator.strip()) for creator in creators]))
         creator = comma_and(creator)
+    else:
+        authors_to_id = {}
 
     summary = display.get('lds20')
 
@@ -217,8 +226,10 @@ def create_page_from_dictionary(item_dict, debug=None, create_category_pages=Fal
     if debug:
         print(content)
     else:
-        create_redirect_wiki_page(page_name=title, redirect_to=document_id,
-                                  summary="Creating redirect page for {}".format(document_id))
+        # title = clean_title(title)
+        # if is_hebrew(title):
+        #     create_redirect_wiki_page(page_name=clean_title(title), redirect_to=document_id,
+        #                           summary="Creating redirect page for {}".format(document_id))
         create_wiki_page(page_name=document_id, summary="Created from primo", content=content)
 
     return content
