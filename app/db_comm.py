@@ -25,7 +25,7 @@ def set_records():
 def set_authorities():
     # graph.schema.create_uniqueness_constraint("Authority", "id")
     for authority, _ in zip(db_auth(), range(200)):
-        m = graph.merge_one("Authority", "id", '0' + authority["id"])
+        m = graph.merge_one("Authority", "id", authority["id"])
         m.properties.update(**authority)
         type_of_record = authority.get('type')
         if type_of_record:
@@ -56,7 +56,7 @@ def authorities_of_record(authorities):
     find_id = re.compile(r'INNL\d{11}\$\$').search
 
     def extract_authority(relationship):
-        return authorities.get(relationship) and {find_id(authority).group()[5:-2] for authority in
+        return authorities.get(relationship) and {find_id(authority).group()[6:-2] for authority in
                                                   authorities[relationship] if find_id(authority)}
 
     authors_set = extract_authority('author')
