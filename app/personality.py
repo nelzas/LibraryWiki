@@ -4,6 +4,25 @@ import json
 
 with open("templates/personality.wiki.template") as f:
     TEMPLATE = f.read()
+with open("templates/headers_male.template") as f:
+    HEADERS_MALE = f.read()
+with open("templates/headers_female.template") as f:
+    HEADERS_FEMALE = f.read()
+
+COLLAPSIBLE = 'class="mw-collapsible mw-collapsed wikitable"'
+LINE_BREAK = '|-' + CR
+
+ITEM = '{{|class="mw-collapsible mw-collapsed wikitable"' + CR + \
+    '!([http://rosetta.nli.org.il/delivery/action/cmsResolver.do?cmsSystem=NNL01&cmsRecordId={nnl} לצפיה])&nbsp; {title} &nbsp;' + CR + \
+    LINE_BREAK + \
+    '| הפריט המלא:[[{description}|{nnl}{nnl_prefix}]]' + CR + \
+    LINE_BREAK + \
+    '|{notes}' + CR + \
+    LINE_BREAK + \
+    '|תאריך : {date}' + CR + \
+    LINE_BREAK + \
+    '|[http://primo.nli.org.il/primo_library/libweb/action/dlDisplay.do?vid=NLI&docId={nnl} הרשומה באתר הספרייה הלאומית ({nnl})]' + CR + \
+    '|}' + CR
 
 template_name = "שם="
 template_image_url = "תמונה="
@@ -56,7 +75,8 @@ def create_page_from_node(person_node, debug=None, create_category_pages=False):
     address_country = get_if_exists(record, '371', 0, 'd')
 
     occupation = get_if_exists(record, '374', 0, 'a')
-    gender = get_if_exists(record, '375', 'a') # MALE/FEMALE
+    gender = get_if_exists(record, '375', 0, 'a') # MALE/FEMALE
+    HEADERS = HEADERS_FEMALE if gender.lower() == "female" else HEADERS_MALE
 
     value_image_url = ""
 
@@ -83,8 +103,12 @@ def create_page_from_node(person_node, debug=None, create_category_pages=False):
             notes += notes_i
 
     if notes:
-        content += CR + "== הערות ==" + CR
+        content += CR
         content += "".join(note['a'] + BR for note in notes)
+
+    # placeholder for search results
+
+    content += CR + HEADERS
 
     if debug:
         print(content)
