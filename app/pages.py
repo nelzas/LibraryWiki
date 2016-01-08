@@ -159,7 +159,7 @@ def create_page_from_dictionary(item_dict, debug=None, create_category_pages=Fal
         title = display['title']
     except:
         title = trim(item_dict['sort']['title'])
-    item_type = display['type']
+    item_type = display['type'].lower()
 
     try:
         display_type = type_dict[item_type][1]  # hebrew type as a definite article, e.g. כתב העת

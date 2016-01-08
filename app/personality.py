@@ -117,7 +117,7 @@ def create_page_from_node(person_node, records_list, debug=None, create_category
                 if record_type == "other":
                     item_type = "other"
                 else:
-                    item_type = type_dict.get(record_type)[3]
+                    item_type = type_dict.get(record_type.lower())[3]
                 if item_type == 'print':
                     if record_rel == 'subject_of':
                         BOOKS_ABOUT.append(content_item)
