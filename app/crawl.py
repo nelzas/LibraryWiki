@@ -16,18 +16,27 @@ for person_nodes in authorities:
         person_json = json.loads(person_node['data'])
         print(person_json)
         records = graph.cypher.execute('match (p:Person {id:"' + person_id + '"})-[r]-(node) return type(r) as rel_type, node')
-        record_ids = []
+        records_list = {'author_of' : {}, 'subject_of' : {}}
+        print("%s records" % len(records))
         for record in records:
-            recordid = record.node['recordid']
-            rel_type = record.rel_type
-            print(rel_type + " : " + recordid)
-            record_data = record.node['data']
-            record_dict = eval(record_data)
-            print(record_dict)
+            record_data = eval(record.node['data'])
+            record_control = record_data['control']
+            record_display = record_data['display']
+            record_type = record_display['type']
+            record_fields = {
+                'nnl' : record_control['sourcerecordid'],
+                'nnl_prefix' : record_control['sourceid'],
+                'title' : record.node['title'],
+                'description' : record.node['title'], # TODO: same as title?
+                'date' : record_display.get('creationdate', 'לא ידוע'),
+                'notes' : record_display.get('lds05',[""]),
+            }
+            rel_type = record.rel_type # either author_of or subject_of
             # create_page_from_dictionary(record_dict)
-            record_ids.append(recordid)
-        print(record_ids)
+            if record_type not in records_list[rel_type]:
+                records_list[rel_type][record_type] = []
+            records_list[rel_type][record_type].append(record_fields)
         try:
-            create_page_from_node(person_node)
+            create_page_from_node(person_node, records_list)
         except Exception as e:
             print(e)

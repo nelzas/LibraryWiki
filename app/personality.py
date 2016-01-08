@@ -1,13 +1,10 @@
 from app.pages import CR, BR, simple_person_name, date8_to_heb_date
 from app.wiki import create_wiki_page, create_redirect_wiki_page
+from app.__init__ import *
 import json
 
 with open("templates/personality.wiki.template") as f:
     TEMPLATE = f.read()
-with open("templates/headers_male.template") as f:
-    HEADERS_MALE = f.read()
-with open("templates/headers_female.template") as f:
-    HEADERS_FEMALE = f.read()
 
 COLLAPSIBLE = 'class="mw-collapsible mw-collapsed wikitable"'
 LINE_BREAK = '|-' + CR
@@ -15,14 +12,14 @@ LINE_BREAK = '|-' + CR
 ITEM = '{{|class="mw-collapsible mw-collapsed wikitable"' + CR + \
     '!([http://rosetta.nli.org.il/delivery/action/cmsResolver.do?cmsSystem=NNL01&cmsRecordId={nnl} לצפיה])&nbsp; {title} &nbsp;' + CR + \
     LINE_BREAK + \
-    '| הפריט המלא:[[{description}|{nnl}{nnl_prefix}]]' + CR + \
+    '| הפריט המלא: [[{nnl_prefix}{nnl}|{description}]]' + CR + \
     LINE_BREAK + \
     '|{notes}' + CR + \
     LINE_BREAK + \
     '|תאריך : {date}' + CR + \
     LINE_BREAK + \
     '|[http://primo.nli.org.il/primo_library/libweb/action/dlDisplay.do?vid=NLI&docId={nnl} הרשומה באתר הספרייה הלאומית ({nnl})]' + CR + \
-    '|}' + CR
+    '|}}' + CR
 
 template_name = "שם="
 template_image_url = "תמונה="
@@ -49,7 +46,7 @@ def get_if_exists(dict, *keys):
     except:
         return ""
 
-def create_page_from_node(person_node, debug=None, create_category_pages=False):
+def create_page_from_node(person_node, records_list, debug=None, create_category_pages=False):
     """
     Create a person page from a neo4j node
     :param person_node: neo4j node
@@ -76,7 +73,7 @@ def create_page_from_node(person_node, debug=None, create_category_pages=False):
 
     occupation = get_if_exists(record, '374', 0, 'a')
     gender = get_if_exists(record, '375', 0, 'a') # MALE/FEMALE
-    HEADERS = HEADERS_FEMALE if gender.lower() == "female" else HEADERS_MALE
+    female = gender.lower() == "female"
 
     value_image_url = ""
 
@@ -106,9 +103,39 @@ def create_page_from_node(person_node, debug=None, create_category_pages=False):
         content += CR
         content += "".join(note['a'] + BR for note in notes)
 
-    # placeholder for search results
+    AUDIO = ["==פריטי שמע=="]
+    VIDEO = ["==פרטי וידאו=="]
+    BOOKS_BY = ["==ספרים שכתבה==" if female else "==ספרים שכתב=="]
+    BOOKS_ABOUT = ["==ספרים אודותיה==" if female else "==ספרים אודותיו=="]
+    IMAGES = ["==גלריית תמונות=="]
+    OTHER = ["==אחר=="]
 
-    content += CR + HEADERS
+    for record_rel in records_list:
+        for record_type in records_list[record_rel]:
+            for record in records_list[record_rel][record_type]:
+                content_item = ITEM.format(**record)
+                item_type = type_dict.get(record_type)[3]
+                if item_type == 'print':
+                    if record_rel == 'subject_of':
+                        BOOKS_ABOUT.append(content_item)
+                    else:
+                        BOOKS_BY.append(content_item)
+                elif item_type == 'audio':
+                    AUDIO.append(content_item)
+                elif item_type == 'video':
+                    VIDEO.append(content_item)
+                elif item_type == 'image':
+                    IMAGES.append(content_item)
+                else:
+                    OTHER.append(content_item)
+
+    content += CR + \
+        CR.join(BOOKS_BY) + CR + \
+        CR.join(BOOKS_ABOUT) + CR + \
+        CR.join(AUDIO) + CR + \
+        CR.join(VIDEO) + CR + \
+        CR.join(IMAGES) + CR + \
+        CR.join(OTHER) + CR
 
     if debug:
         print(content)
