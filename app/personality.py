@@ -104,7 +104,7 @@ def create_page_from_node(person_node, records_list, debug=None, create_category
         content += "".join(note['a'] + BR for note in notes)
 
     AUDIO = ["==פריטי שמע=="]
-    VIDEO = ["==פרטי וידאו=="]
+    VIDEO = ["==פריטי וידאו=="]
     BOOKS_BY = ["==ספרים שכתבה==" if female else "==ספרים שכתב=="]
     BOOKS_ABOUT = ["==ספרים אודותיה==" if female else "==ספרים אודותיו=="]
     IMAGES = ["==גלריית תמונות=="]
@@ -114,7 +114,10 @@ def create_page_from_node(person_node, records_list, debug=None, create_category
         for record_type in records_list[record_rel]:
             for record in records_list[record_rel][record_type]:
                 content_item = ITEM.format(**record)
-                item_type = type_dict.get(record_type)[3]
+                if record_type == "other":
+                    item_type = "other"
+                else:
+                    item_type = type_dict.get(record_type)[3]
                 if item_type == 'print':
                     if record_rel == 'subject_of':
                         BOOKS_ABOUT.append(content_item)
