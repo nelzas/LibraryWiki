@@ -2,6 +2,7 @@ from requests import get
 import xmltodict
 import json
 
+PRIMO = 'primo.nli.org.il'
 
 def primo_get(document_id):
     """
@@ -9,7 +10,7 @@ def primo_get(document_id):
     :param document_id:
     :return: a json representation of the record
     """
-    url = "http://primo.nli.org.il/PrimoWebServices/xservice/search/fullview?institution=NNL&docId=" + document_id + "&json=true"
+    url = "http://" + PRIMO + "/PrimoWebServices/xservice/search/fullview?institution=NNL&docId=" + document_id + "&json=true"
     top = get(url).json()
     return top['SEGMENTS']['JAGROOT']['RESULT']['DOCSET']['DOC']['PrimoNMBib']['record']
 
@@ -20,7 +21,7 @@ def primo_search(search_term, limit=20):
     :param search_term: the term to search (can be in hebrew)
     :return: a json representation of the search results
     """
-    url = 'http://primo.nli.org.il/PrimoWebServices/xservice/search/brief?institution=NNL&query=any,contains,"' + search_term + '"&indx=1&bulkSize=' + str(
+    url = 'http://' + PRIMO + '/PrimoWebServices/xservice/search/brief?institution=NNL&query=any,contains,"' + search_term + '"&indx=1&bulkSize=' + str(
         limit) + '&json=true'
     top = get(url).json()
     return top['sear:SEGMENTS']['sear:JAGROOT']['sear:RESULT']
@@ -38,7 +39,7 @@ def file_get(file_name):
 
 class Results:
     _SEARCH_URL = \
-        'http://primo.nli.org.il/PrimoWebServices/xservice/search/brief?institution=NNL&query=any,contains,"{}"' \
+        'http://' + PRIMO + '/PrimoWebServices/xservice/search/brief?institution=NNL&query=any,contains,"{}"' \
         '&indx={}&bulkSize={}&json=true'
 
     def __init__(self, query, count):
