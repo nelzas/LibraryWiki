@@ -196,7 +196,10 @@ def create_page_from_dictionary(item_dict, debug=None, create_category_pages=Fal
         performed_by_str = ", ".join(person_name(authors_to_id, performer) for performer in performed_by)
 
     source = display['source']
-    lib_link = display['lds21']
+    lib_link = display.get('lds21')
+    if not lib_link:
+        lib_link = item_dict['links']['linktorsrc']
+        lib_link = lib_link[lib_link.find("http"):]
 
     content = "{{DISPLAYTITLE:%s}}\n" % title
     content += "{}'''{}''' {} על ידי {}".format(display_type, title, creation_verb, creator)
@@ -221,7 +224,9 @@ def create_page_from_dictionary(item_dict, debug=None, create_category_pages=Fal
     alef_link = ALEF_LINK.format(originalsourceid, sourcerecordid)
     content += "* [{} הפריט בקטלוג הספריה]\n".format(alef_link)
 
-    content += handle_categories(item_dict['browse'], create_category_pages)
+    browse = item_dict.get('browse')
+    if browse:
+        content += handle_categories(item_dict['browse'], create_category_pages)
 
     if debug:
         print(content)
