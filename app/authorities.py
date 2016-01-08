@@ -23,22 +23,30 @@
 from collections import defaultdict
 import xmltodict
 import json
+import re
 
 
-def get_authorities():
+def get_authorities(from_id = 0, to_id = 999999999):
     with open('/home/adir/Downloads/nnl10all.xml') as f:
         buffer = ''
+        id = 0
         line = f.readline()
         while not line.strip().endswith('">'):
             line = f.readline()
 
         for line in f:
+            if not id:
+                groups = re.match(r'  <controlfield tag="001">(\d*)</controlfield>', line)
+                if groups:
+                    id = int(groups.group(1))
             buffer += line
             if line.strip() == "</record>":
-                record = xmltodict.parse(buffer)['record']
-                result = {k: record[k] for k in record if k == "controlfield" or k == "datafield"}
-                yield result
+                if id >= from_id and id <= to_id:
+                    record = xmltodict.parse(buffer)['record']
+                    result = {k: record[k] for k in record if k == "controlfield" or k == "datafield"}
+                    yield result
                 buffer = ''
+                id = 0
 
 
 codes = {
@@ -161,8 +169,8 @@ def conv_dict(d):
     return tags
 
 
-def db_auth():
-    for record in get_authorities():
+def db_auth(from_id = 0, to_id = 999999999):
+    for record in get_authorities(from_id, to_id):
         if not record.get('datafield'):
             continue
         properties = {'id': record['controlfield'][2]['#text'], 'data': json.dumps(conv_dict(record))}

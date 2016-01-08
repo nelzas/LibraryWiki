@@ -10,10 +10,9 @@ http.socket_timeout = 9999
 py2neo.authenticate(NEO4J_URL, NEO4J_USER, NEO4J_PASSWORD)
 graph = py2neo.Graph('http://' + NEO4J_URL + NEO4J_GRAPH)
 
-
 def set_records():
     # graph.schema.create_uniqueness_constraint("Record", "recordid")
-    for result, _ in zip(primo_comm.Results("בן גוריון", 200), range(100)):
+    for result, _ in zip(primo_comm.Results("בן גוריון", 200), range(4000)):
         properties = {'recordid': result['control']['recordid'], 'data': str(result),
                       'title': result['display']['title']}
         m = graph.merge_one("Record", "recordid", properties['recordid'])
@@ -22,9 +21,9 @@ def set_records():
         m.push()
 
 
-def set_authorities():
+def set_authorities(from_id = 0, to_id = 999999999):
     # graph.schema.create_uniqueness_constraint("Authority", "id")
-    for authority, _ in zip(db_auth(), range(200)):
+    for authority, _ in zip(db_auth(from_id, to_id), range(4000)):
         m = graph.merge_one("Authority", "id", authority["id"])
         m.properties.update(**authority)
         type_of_record = authority.get('type')
@@ -67,7 +66,7 @@ def authorities_of_record(authorities):
 print("setting records...")
 set_records()
 print("setting authorities...")
-set_authorities()
+set_authorities(from_id = 121498) # 121498 is Neomi Shemer
 print("creating relationships...")
 create_records_authorities_relationships()
 print("done!")
