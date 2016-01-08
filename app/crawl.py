@@ -8,6 +8,8 @@ import json
 py2neo.authenticate(NEO4J_URL, NEO4J_USER, NEO4J_PASSWORD)
 graph = py2neo.Graph('http://' + NEO4J_URL + NEO4J_GRAPH)
 authorities = graph.cypher.execute('match (n:Person) where exists(n.person_name_heb) return n')
+# authorities = graph.cypher.execute('match (p:Person)-[]-(r) with p, count(r) as rels where exists(p.person_name_heb) and rels > 0 return p')
+
 for person_nodes in authorities:
     for person_node in person_nodes:
         person_id = person_node['id']
@@ -23,13 +25,17 @@ for person_nodes in authorities:
             record_control = record_data['control']
             record_display = record_data['display']
             record_type = record_display['type']
+            record_notes = record_display.get('lds05',[""])
+            if type(record_notes) is str:
+                record_notes = [record_notes]
+            record_notes = "<br>".join(record_notes)
             record_fields = {
                 'nnl' : record_control['sourcerecordid'],
                 'nnl_prefix' : record_control['sourceid'],
                 'title' : record.node['title'],
                 'description' : record.node['title'], # TODO: same as title?
                 'date' : record_display.get('creationdate', 'לא ידוע'),
-                'notes' : record_display.get('lds05',[""]),
+                'notes' : record_notes,
             }
             rel_type = record.rel_type # either author_of or subject_of
             # create_page_from_dictionary(record_dict)
