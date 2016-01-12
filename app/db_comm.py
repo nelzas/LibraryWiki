@@ -15,7 +15,8 @@ def set_entities(entities):
     for entity in entities:
         entity_node = graph.merge_one(entity.labels[0], "id", entity.properties["id"])
         entity_node.properties.update(**entity.properties)
-        entity.labels and entity_node.labels.add(*entity_node.labels)
+        for label in entity.labels:
+            entity_node.labels.add(label)
         entity_node.push()
 
 
@@ -30,7 +31,7 @@ def set_records():
         m.push()
 
 
-def set_authorities(from_id = 0, to_id = 999999999):
+def set_authorities():
     # graph.schema.create_uniqueness_constraint("Authority", "id")
     for authority, _ in zip(db_auth(), range(200)):
         m = graph.merge_one("Authority", "id", authority["id"])
@@ -90,4 +91,4 @@ def extract_authority(relationship, authorities):
 
 
 print("setting records...")
-set_entities(entity_iterators.Results('רבי יוחנן בן נפחא'))
+set_entities(entity_iterators.get_authorities(from_id=20000))

@@ -21,18 +21,20 @@ class Entity:
 
 class Authority(Entity):
     def _build_properties(self):
-        self.properties['data'] = json.dumps(self.data)
-        self.properties['id'] = self.data['001'][0]['#text']
+        properties = {'data': json.dumps(self.data), 'id': self.data['001'][0]['#text']}
         for tag, subfields in self.data.items():
-            CODES[tag] and self.properties.update(CODES[tag](subfields[0]))
+            CODES.get(tag) and properties.update(CODES[tag](subfields[0]))
         if '100' in self.data:
-            self.properties['type'] = 'person'
+            properties['type'] = 'person'
         elif '151' in self.data:
-            self.properties['type'] = 'location'
+            properties['type'] = 'location'
+        else:
+            properties['type'] = None
+        return properties
 
     def _build_labels(self):
         authority_type = self.properties['type']
-        if type:
+        if authority_type:
             return 'Authority', authority_type
         return 'Authority',
 
@@ -92,6 +94,22 @@ class Portrait(Photo):
     @property
     def _fl_base(self):
         return 'nnl01'
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
     def _build_labels(self):
         return super()._build_labels() + ('Portrait',)

@@ -23,13 +23,10 @@
 from collections import defaultdict
 from functools import partial
 
-import xmltodict
-import re
-
-
 PUNCTUATION = {',', '.', ':', '!', ';', '?'}
 BRACKETS = {'<', '>'}
-PUNCTUATION_AND_BRACKETS = PUNCTUATION.copy().update(BRACKETS)
+PUNCTUATION_AND_BRACKETS = PUNCTUATION.copy()
+PUNCTUATION_AND_BRACKETS.update(BRACKETS)
 
 
 def remove_all(line, chars_to_remove):
