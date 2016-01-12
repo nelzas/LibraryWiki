@@ -77,7 +77,7 @@ class Portraits(Photos):
     @property
     def _search_url(self):
         return 'http://primo.nli.org.il/PrimoWebServices/xservice/search/brief?institution=NNL' \
-               '&loc=local,scope:(NNL01_Schwad)&query=title,contains,{}&sortField=&indx={}&bulkSize={}&json=true'
+               '&loc=local,scope:(NNL01_Schwad)&query=any,contains,{}&sortField=&indx={}&bulkSize={}&json=true'
 
     @property
     def entity_type(self):

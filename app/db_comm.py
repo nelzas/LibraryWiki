@@ -1,7 +1,7 @@
 import py2neo
 import re
-from app import entity_iterators
-from app.node_entities import db_auth
+from app.entity_iterators import Portraits, get_authorities
+from app.node_entities import Authority
 from app.settings import *
 from py2neo.packages.httpstream import http
 
@@ -11,58 +11,31 @@ py2neo.authenticate(NEO4J_URL, NEO4J_USER, NEO4J_PASSWORD)
 graph = py2neo.Graph('http://' + NEO4J_URL + NEO4J_GRAPH)
 
 
+def get_entity_node(entity):
+    return graph.merge_one(entity.labels[0], "id", entity.properties["id"])
+
+
 def set_entities(entities):
     for entity in entities:
-        entity_node = graph.merge_one(entity.labels[0], "id", entity.properties["id"])
+        entity_node = get_entity_node(entity)
         entity_node.properties.update(**entity.properties)
         for label in entity.labels:
             entity_node.labels.add(label)
         entity_node.push()
+        if isinstance(entity, Authority):
+            authority_portrait(entity)
 
 
-def set_records():
-    # graph.schema.create_uniqueness_constraint("Record", "recordid")
-    for result, _ in zip(entity_iterators.Results("בן גוריון", 200), range(100)):
-        properties = {'recordid': result['control']['recordid'], 'data': str(result),
-                      'title': result['display']['title']}
-        m = graph.merge_one("Record", "recordid", properties['recordid'])
-        m.properties.update(**properties)
-        m.labels.add(result['display']['type'])
-        m.push()
-
-
-def set_authorities():
-    # graph.schema.create_uniqueness_constraint("Authority", "id")
-    for authority, _ in zip(db_auth(), range(200)):
-        m = graph.merge_one("Authority", "id", authority["id"])
-        m.properties.update(**authority)
-        type_of_record = authority.get('type')
-        if type_of_record:
-            m.labels.add(type_of_record.title())
-        m.push()
-
-
-def set_portraits(query):
-    # graph.schema.create_uniqueness_constraint("Record", "recordid")
-    portraits = []
-    for result in entity_iterators.Portraits(query):
-        properties = {'recordid': result['control']['recordid'], 'data': str(result),
-                      'title': result['display']['title'],
-                      'fl': entity_iterators.Portraits.get_fl(result['control']['sourcerecordid'])}
-        m = graph.merge_one("Record", "recordid", properties['recordid'])
-        m.properties.update(**properties)
-        m.labels.add('portrait')
-        m.push()
-        portraits.append(m)
-    return portraits
-
-
-def create_relationship(authorities, record, relation):
-    if not authorities:
-        return
-    for authority in authorities:
-        node = graph.merge_one("Authority", "id", authority)
-        graph.create_unique(py2neo.Relationship(node, relation, record))
+def authority_portrait(authority):
+    query = authority.properties['person_name_absolute']
+    portraits = Portraits(query)
+    set_entities(portraits)
+    portraits = Portraits(query)
+    for portrait in portraits:
+        if [topic for topic in portrait.properties['topic'] if topic.startswith(query)]:
+            authority_node = get_entity_node(authority)
+            portrait_node = get_entity_node(portrait)
+            graph.create_unique(py2neo.Relationship(authority_node, "subject_of", portrait_node))
 
 
 def create_records_authorities_relationships():
@@ -84,6 +57,14 @@ def authorities_of_record(authorities):
     return authors_set, subjects_set
 
 
+def create_relationship(authorities, record, relation):
+    if not authorities:
+        return
+    for authority in authorities:
+        node = graph.merge_one("Authority", "id", authority)
+        graph.create_unique(py2neo.Relationship(node, relation, record))
+
+
 def extract_authority(relationship, authorities):
     find_id = re.compile(r"INNL\d{11}\$\$").search
     return authorities.get(relationship) and {find_id(authority).group()[6:-2] for authority in
@@ -91,4 +72,4 @@ def extract_authority(relationship, authorities):
 
 
 print("setting records...")
-set_entities(entity_iterators.get_authorities(from_id=20000))
+set_entities(get_authorities(from_id=17958, to_id=17960))

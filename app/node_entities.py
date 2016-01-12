@@ -1,6 +1,4 @@
 import json
-import app.authorities
-from app import entity_iterators
 from app.authorities import CODES
 from requests import get
 import xmltodict
@@ -51,8 +49,8 @@ class Record(Entity):
 class Photo(Record):
     def __init__(self, data):
         self._fl_url = "http://aleph.nli.org.il/X?op=find-doc&doc_num={}&base={}"
-        self._fl_url = self._build_fl_url()
         super().__init__(data)
+        self._fl_url = self._build_fl_url()
 
     @property
     def _fl_base(self):
@@ -95,45 +93,5 @@ class Portrait(Photo):
     def _fl_base(self):
         return 'nnl01'
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
     def _build_labels(self):
         return super()._build_labels() + ('Portrait',)
-
-
-def db_auth():
-    for record in entity_iterators.get_authorities():
-        if not record.get('datafield'):
-            continue
-        properties = {'id': record['controlfield'][2]['#text'],
-                      'data': json.dumps(app.authorities.convert_dict(record))}
-        if record.get('datafield'):
-            dat = app.authorities.to_list(record['datafield'])
-            tags = [app.authorities.CODES.get(data['@tag']) or data['@tag'] for data in dat]
-            if app.authorities.CODES['100'] in tags:
-                properties['type'] = 'person'
-            elif app.authorities.CODES['151'] in tags:
-                properties['type'] = 'location'
-            else:
-                pass
-            if tags and dat[0].get('subfield'):
-                for i, tag in enumerate(tags):
-                    subfields = {sub['@code']: sub['#text'] for sub in app.authorities.to_list(dat[i].get('subfield'))}
-                    info = app.authorities.parse_tag(tags[i], subfields)
-                    if info:
-                        properties[info[0]] = info[1]
-                yield properties
