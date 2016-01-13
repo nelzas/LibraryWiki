@@ -21,7 +21,6 @@ def set_entities(entities):
         for label in entity.labels:
             entity_node.labels.add(label)
         entity_node.push()
-        print(entity.properties)
 
 
 def set_portraits():
@@ -39,7 +38,7 @@ def authority_portrait(authority):
     for portrait in portraits:
         if [topic for topic in portrait.properties['topic'] if topic.startswith(query)]:
             portrait_node = get_entity_node(portrait)
-            graph.create_unique(py2neo.Relationship(authority.node, "subject_of", portrait_node))
+            graph.create_unique(py2neo.Relationship(authority.node, "portrait_of", portrait_node))
 
 
 def create_records_authorities_relationships():

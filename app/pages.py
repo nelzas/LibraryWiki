@@ -24,6 +24,7 @@ month_num_to_heb_name = {
     '12': 'דצמבר',
 }
 
+
 def date8_to_heb_date(date8):
     """
     convert 8 digit date to date in hebrew
@@ -41,6 +42,7 @@ def date8_to_heb_date(date8):
     day = str(int(date8[6:8]))
     return "{} ב{} {}".format(day, month, year)
 
+
 def str_to_list(str_or_list):
     if str_to_list is None:
         return None
@@ -49,6 +51,7 @@ def str_to_list(str_or_list):
     else:
         return str_or_list
 
+
 def comma_and(line):
     """
     in a comma-separated list of terms, replace the last comma with וו החיבור.
@@ -56,6 +59,7 @@ def comma_and(line):
     :return: last comma (if exists) replaced with "ו"
     """
     return ' ו'.join(line.rsplit(', ', maxsplit=1))
+
 
 def entries_to_authority_id(browse_entries):
     """
@@ -72,6 +76,7 @@ def entries_to_authority_id(browse_entries):
             authority_dictionary[match.group(2)] = match.group(3)[5:]
     return authority_dictionary
 
+
 def simple_person_name(primo_person_name):
     if primo_person_name[-1] == ",":
         primo_person_name = primo_person_name[:-1]
@@ -79,6 +84,7 @@ def simple_person_name(primo_person_name):
     if len(splitted) == 1:
         return splitted[0]
     return splitted[1] + " " + splitted[0]
+
 
 def person_name(persons_to_id, primo_person_name):
     """
@@ -99,8 +105,10 @@ def person_name(persons_to_id, primo_person_name):
     else:
         return display_name
 
+
 def is_hebrew(line):
     return re.match(".*[א-ת].*", line) is not None
+
 
 def trim(line):
     """
@@ -114,6 +122,7 @@ def trim(line):
         clean_line = clean_line[:-1]
     return clean_line
 
+
 def handle_categories(browse, create_category_pages):
     subjects = {}
     if browse.get('subject'):
@@ -124,7 +133,7 @@ def handle_categories(browse, create_category_pages):
         if match:
             nnl = match.group(3)[5:]
             term = match.group(1)
-            if is_hebrew(term): # Hebrew term
+            if is_hebrew(term):  # Hebrew term
                 nnl_to_subject[nnl] = term
 
     result = ""
@@ -136,12 +145,31 @@ def handle_categories(browse, create_category_pages):
 
     return result
 
+
 BAD = "<>[]{}"
+
 
 def clean_title(title):
     for bad in BAD:
         title = title.replace(bad, " ")
     return title
+
+
+def stablize(barr, length):
+    barr = barr[:length]
+    try:
+        sarr = barr.decode()
+    except:
+        return stablize(barr, length - 1)
+    return sarr
+
+
+def limit_length(title):
+    b_title = bytes(title, encoding='utf8')
+    if len(b_title) <= 255:
+        return title
+    return stablize(b_title, 252) + '...'
+
 
 def create_page_from_dictionary(item_dict, debug=None, create_category_pages=False):
     """
@@ -231,10 +259,11 @@ def create_page_from_dictionary(item_dict, debug=None, create_category_pages=Fal
     if debug:
         print(content)
     else:
-        # title = clean_title(title)
-        # if is_hebrew(title):
-        #     create_redirect_wiki_page(page_name=clean_title(title), redirect_to=document_id,
-        #                           summary="Creating redirect page for {}".format(document_id))
+        title = clean_title(title)
+        if is_hebrew(title):
+            title = limit_length(title)
+            create_redirect_wiki_page(page_name=clean_title(title), redirect_to=document_id,
+                                      summary="Creating redirect page for {}".format(document_id))
         create_wiki_page(page_name=document_id, summary="Created from primo", content=content)
 
     return content
