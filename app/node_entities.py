@@ -48,16 +48,17 @@ class Record(Entity):
 
 class Photo(Record):
     def __init__(self, data):
+        self.data = data
         self._fl_url = "http://aleph.nli.org.il/X?op=find-doc&doc_num={}&base={}"
-        super().__init__(data)
         self._fl_url = self._build_fl_url()
+        super().__init__(data)
 
     @property
     def _fl_base(self):
         return 'nnl03'
 
     def _build_fl_url(self):
-        return self._fl_url.format(self.properties['control']['sourcerecordid'], self._fl_base)
+        return self._fl_url.format(self.data['control']['sourcerecordid'], self._fl_base)
 
     def _build_properties(self):
         properties = super()._build_properties()
