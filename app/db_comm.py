@@ -1,7 +1,6 @@
 import py2neo
 import re
 from app.entity_iterators import Portraits, get_authorities
-from app.node_entities import Authority
 from app.settings import *
 from py2neo.packages.httpstream import http
 
@@ -22,20 +21,24 @@ def set_entities(entities):
         for label in entity.labels:
             entity_node.labels.add(label)
         entity_node.push()
-        if isinstance(entity, Authority):
-            authority_portrait(entity)
+
+
+def set_portraits():
+    people = graph.cypher.execute(
+        "match (n:Person) where exists(n.person_name_absolute) return n.person_name_absolute as name, n as node")
+    for person in people:
+        authority_portrait(person)
 
 
 def authority_portrait(authority):
-    query = authority.properties['person_name_absolute']
+    query = authority.name
     portraits = Portraits(query)
     set_entities(portraits)
     portraits = Portraits(query)
     for portrait in portraits:
         if [topic for topic in portrait.properties['topic'] if topic.startswith(query)]:
-            authority_node = get_entity_node(authority)
             portrait_node = get_entity_node(portrait)
-            graph.create_unique(py2neo.Relationship(authority_node, "subject_of", portrait_node))
+            graph.create_unique(py2neo.Relationship(authority.node, "portrait_of", portrait_node))
 
 
 def create_records_authorities_relationships():
@@ -71,5 +74,5 @@ def extract_authority(relationship, authorities):
                                               authorities[relationship] if find_id(authority)}
 
 
-print("setting records...")
-set_entities(get_authorities(from_id=17958, to_id=17960))
+# set_entities(get_authorities(from_id=620246, to_id=620248))
+set_portraits()

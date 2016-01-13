@@ -23,9 +23,9 @@ class Authority(Entity):
         for tag, subfields in self.data.items():
             CODES.get(tag) and properties.update(CODES[tag](subfields[0]))
         if '100' in self.data:
-            properties['type'] = 'person'
+            properties['type'] = 'Person'
         elif '151' in self.data:
-            properties['type'] = 'location'
+            properties['type'] = 'Location'
         else:
             properties['type'] = None
         return properties
