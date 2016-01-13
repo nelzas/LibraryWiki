@@ -11,8 +11,10 @@ LINE_BREAK = '|-' + CR
 OPENDIV = '<div style="width: 600px;">'
 CLOSEDIV = '</div>'
 
+VIEW_ONLINE = '([rosetta.nli.org.il/delivery/DeliveryManagerServlet?dps_pid={rosetta} לצפיה])'
+
 ITEM = '{{|class="mw-collapsible mw-collapsed wikitable" width=100%' + CR + \
-    '!([rosetta.nli.org.il/delivery/DeliveryManagerServlet?dps_pid={rosetta} לצפיה])&nbsp; {title} &nbsp;' + CR + \
+    '!{view}&nbsp; {title} &nbsp;' + CR + \
     LINE_BREAK + \
     '| הפריט המלא: [[{nnl_prefix}{nnl}|{description}]]' + CR + \
     LINE_BREAK + \
@@ -92,6 +94,11 @@ def create_page_from_node(person_node, records_list, debug=None, create_category
         for record_type in records_list[record_rel]:
             for record in records_list[record_rel][record_type]:
                 content_item = ITEM.format(**record)
+                rosetta_link = record['rosetta']
+                if len(rosetta_link>0):
+                    view_online = VIEW_ONLINE
+                    view_online.replace('{roestta}',rosetta_link)
+                    content_item.replace('{view}',view_online)
                 if record_type == "other":
                     item_type = "other"
                 else:
