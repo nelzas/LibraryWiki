@@ -1,6 +1,6 @@
 import py2neo
 import re
-from app.entity_iterators import Portraits, get_authorities
+from app.entity_iterators import Portraits
 from app.settings import *
 from py2neo.packages.httpstream import http
 

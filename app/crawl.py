@@ -7,7 +7,8 @@ import json
 
 py2neo.authenticate(NEO4J_URL, NEO4J_USER, NEO4J_PASSWORD)
 graph = py2neo.Graph('http://' + NEO4J_URL + NEO4J_GRAPH)
-authorities = graph.cypher.execute('match (n:Person) where exists(n.person_name_heb) return n')
+# authorities = graph.cypher.execute('match (n:Person) where exists(n.person_name_heb) return n')
+authorities = graph.cypher.execute("match (n:Person) where n.id = '000017959' return n")
 # authorities = graph.cypher.execute('match (p:Person)-[]-(r) with p, count(r) as rels where exists(p.person_name_heb) and rels > 0 return p')
 
 for person_nodes in authorities:
@@ -18,7 +19,7 @@ for person_nodes in authorities:
         person_json = json.loads(person_node['data'])
         print(person_json)
         records = graph.cypher.execute('match (p:Person {id:"' + person_id + '"})-[r]-(node) return type(r) as rel_type, node')
-        records_list = {'author_of' : {}, 'subject_of' : {}}
+        records_list = {'author_of' : {}, 'subject_of' : {}, 'portrait_of' : {}}
         print("%s records" % len(records))
         for record in records:
             record_data = eval(record.node['data'])
