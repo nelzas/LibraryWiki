@@ -107,6 +107,9 @@ def create_page_from_node(person_node, records_list, debug=None, create_category
                 else:
                     content_item = content_item.replace('{view}', '')
                 content_item = content_item.format(**record)
+                if record_rel == 'portrait_of':
+                        value_image_url = record['rosetta']
+
                 if record_type == "other":
                     item_type = "other"
                 else:
@@ -121,9 +124,6 @@ def create_page_from_node(person_node, records_list, debug=None, create_category
                 elif item_type == 'video':
                     VIDEO.append(content_item)
                 elif item_type == 'image':
-                    if record_rel == 'portrait_of':
-                        value_image_url = record['rosetta']
-                    else:
                         IMAGES.append(content_item)
                 else:
                     OTHER.append(content_item)
