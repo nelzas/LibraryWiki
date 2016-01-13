@@ -13,7 +13,7 @@ OPENDIV = '<div style="width: 600px;">'
 CLOSEDIV = '</div>'
 
 VIEW_ONLINE = '([{} לצפיה])'
-
+GALLERY_ITEM = '''| width="200" |[http://rosetta.nli.org.il/delivery/DeliveryManagerServlet?dps_pid={0}&dps_func=stream <img src="http://rosetta.nli.org.il/delivery/DeliveryManagerServlet?dps_pid={0}&dps_func=thumbnail" style="max-height:150px; max-width: 150px"/>]'''
 ITEM = '{{|class="mw-collapsible mw-collapsed wikitable" width=100%' + CR + \
        '!{view}&nbsp; {title} &nbsp;' + CR + \
        LINE_BREAK + \
@@ -45,8 +45,8 @@ def item(record, tag, code):
     pass
 
 
-def get_if_exists(dict, *keys):
-    dict0 = dict
+def get_if_exists(diction, *keys):
+    dict0 = diction
     try:
         for key in keys:
             dict0 = dict0[key]
@@ -96,7 +96,8 @@ def create_page_from_node(person_node, records_list, debug=None, create_category
     VIDEO = ["==פריטי וידאו==", OPENDIV]
     BOOKS_BY = ["==ספרים שכתבה==" if female else "==ספרים שכתב==", OPENDIV]
     BOOKS_ABOUT = ["==ספרים אודותיה==" if female else "==ספרים אודותיו==", OPENDIV]
-    IMAGES = ["==גלריית תמונות==", OPENDIV]
+    IMAGES = ["==גלריית תמונות==", '{| class="gallery"']
+    IMAGES_DESC = ['|-']
     OTHER = ["==אחר==", OPENDIV]
 
     for record_rel in records_list:
@@ -133,8 +134,11 @@ def create_page_from_node(person_node, records_list, debug=None, create_category
                     AUDIO.append(content_item)
                 elif item_type == 'video':
                     VIDEO.append(content_item)
-                elif item_type == 'image':
-                    IMAGES.append(content_item)
+                elif item_type == 'photograph':
+                    if len(IMAGES_DESC) > 6 or not record.get('fl'):
+                        continue
+                    IMAGES.append(GALLERY_ITEM.format(record['fl']))
+                    IMAGES_DESC.append('| {}'.format(record['title']))
                 else:
                     OTHER.append(content_item)
 
@@ -163,12 +167,14 @@ def create_page_from_node(person_node, records_list, debug=None, create_category
         content += CR
         content += "".join(note['a'] + BR for note in notes)
 
+    IMAGES_DESC.append('|}')
+
     content += CR + \
                CR.join(BOOKS_BY) + CLOSEDIV + CR + \
                CR.join(BOOKS_ABOUT) + CLOSEDIV + CR + \
                CR.join(AUDIO) + CLOSEDIV + CR + \
                CR.join(VIDEO) + CLOSEDIV + CR + \
-               CR.join(IMAGES) + CLOSEDIV + CR + \
+               CR.join(IMAGES + IMAGES_DESC) + CR + \
                CR.join(OTHER) + CLOSEDIV + CR
 
     if debug:

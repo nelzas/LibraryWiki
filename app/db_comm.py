@@ -38,10 +38,9 @@ def authority_portrait(authority):
     set_entities(portraits)
     portraits = Portraits(query)
     for portrait in portraits:
-        if [topic for topic in portrait.properties['topic'] if topic.startswith(query)]:
-            portrait_node = get_entity_node(portrait)
-            graph.create_unique(py2neo.Relationship(authority.node, "subject_of", portrait_node))
-            graph.create_unique(py2neo.Relationship(authority.node, "portrait_of", portrait_node))
+        portrait_node = get_entity_node(portrait)
+        graph.create_unique(py2neo.Relationship(authority.node, "subject_of", portrait_node))
+        graph.create_unique(py2neo.Relationship(authority.node, "portrait_of", portrait_node))
 
 
 def set_photos():
@@ -59,10 +58,9 @@ def authority_photos(authority):
     set_entities(photos)
     photos = Photos(query)
     for photo in photos:
-        if photo.properties.get('topic') and [topic for topic in to_list(photo.properties['topic']) if
-                                              topic.startswith(query)]:
-            portrait_node = get_entity_node(photo)
-            graph.create_unique(py2neo.Relationship(authority.node, "subject_of", portrait_node))
+        portrait_node = get_entity_node(photo)
+        print(authority.node, portrait_node)
+        graph.create_unique(py2neo.Relationship(authority.node, "subject_of", portrait_node))
 
 
 def create_records_authorities_relationships():
