@@ -45,7 +45,9 @@ for person_nodes in authorities:
             if record_type not in records_list[rel_type]:
                 records_list[rel_type][record_type] = []
             records_list[rel_type][record_type].append(record_fields)
-        try:
-            create_page_from_node(person_node, records_list)
-        except Exception as e:
-            print(e)
+        create_page_from_node(person_node, records_list)
+            # try:
+            #     create_page_from_node(person_node, records_list)
+            # except Exception as e:
+                #     print('boom')
+                #     print(e)

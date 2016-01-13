@@ -1,6 +1,6 @@
 import py2neo
 import re
-from app.entity_iterators import Portraits
+from app.entity_iterators import Portraits, Photos
 from app.settings import *
 from py2neo.packages.httpstream import http
 
@@ -38,7 +38,26 @@ def authority_portrait(authority):
     for portrait in portraits:
         if [topic for topic in portrait.properties['topic'] if topic.startswith(query)]:
             portrait_node = get_entity_node(portrait)
+            graph.create_unique(py2neo.Relationship(authority.node, "subject_of", portrait_node))
             graph.create_unique(py2neo.Relationship(authority.node, "portrait_of", portrait_node))
+
+
+def set_photos():
+    people = graph.cypher.execute(
+        "match (n:Person) where exists(n.person_name_heb) return n.person_name_heb as name, n as node")
+    for person in people:
+        authority_photos(person)
+
+
+def authority_photos(authority):
+    query = authority.name
+    photos = Photos(query)
+    set_entities(photos)
+    photos = Photos(query)
+    for photo in photos:
+        if [topic for topic in photo.properties['topic'] if topic.startswith(query)]:
+            portrait_node = get_entity_node(photo)
+            graph.create_unique(py2neo.Relationship(authority.node, "subject_of", portrait_node))
 
 
 def create_records_authorities_relationships():

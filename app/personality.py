@@ -1,3 +1,4 @@
+from app.authorities import to_list
 from app.pages import CR, BR, simple_person_name, date8_to_heb_date
 from app.wiki import create_wiki_page, create_redirect_wiki_page
 from app.__init__ import *
@@ -11,7 +12,7 @@ LINE_BREAK = '|-' + CR
 OPENDIV = '<div style="width: 600px;">'
 CLOSEDIV = '</div>'
 
-VIEW_ONLINE = '([rosetta.nli.org.il/delivery/DeliveryManagerServlet?dps_pid={rosetta} לצפיה])'
+VIEW_ONLINE = '([{} לצפיה])'
 
 ITEM = '{{|class="mw-collapsible mw-collapsed wikitable" width=100%' + CR + \
     '!{view}&nbsp; {title} &nbsp;' + CR + \
@@ -60,23 +61,23 @@ def create_page_from_node(person_node, records_list, debug=None, create_category
     """
     wiki_page_name = person_node['id']
     person_name = simple_person_name(person_node['person_name_heb'])
-    record = json.loads(person_node['data'])
+    this_record = json.loads(person_node['data'])
 
-    birth_date = date8_to_heb_date(get_if_exists(record, '046', 0, 'f'))
-    death_date = date8_to_heb_date(get_if_exists(record, '046', 0, 'g'))
+    birth_date = date8_to_heb_date(get_if_exists(this_record, '046', 0, 'f'))
+    death_date = date8_to_heb_date(get_if_exists(this_record, '046', 0, 'g'))
 
-    birth_place = get_if_exists(record, '370', 0, 'a')
-    death_place = get_if_exists(record, '370', 0, 'b')
+    birth_place = get_if_exists(this_record, '370', 0, 'a')
+    death_place = get_if_exists(this_record, '370', 0, 'b')
 
-    other_names = get_if_exists(record, '400')
+    other_names = get_if_exists(this_record, '400')
     other_names_value = BR.join(simple_person_name(other_name['a']) for other_name in other_names)
 
-    address = get_if_exists(record, '371', 0, 'a')
-    address_place = get_if_exists(record, '371', 0, 'b')
-    address_country = get_if_exists(record, '371', 0, 'd')
+    address = get_if_exists(this_record, '371', 0, 'a')
+    address_place = get_if_exists(this_record, '371', 0, 'b')
+    address_country = get_if_exists(this_record, '371', 0, 'd')
 
-    occupation = get_if_exists(record, '374', 0, 'a')
-    gender = get_if_exists(record, '375', 0, 'a') # MALE/FEMALE
+    occupation = get_if_exists(this_record, '374', 0, 'a')
+    gender = get_if_exists(this_record, '375', 0, 'a') # MALE/FEMALE
     female = gender.lower() == "female"
 
     value_image_url = ""
@@ -93,12 +94,19 @@ def create_page_from_node(person_node, records_list, debug=None, create_category
     for record_rel in records_list:
         for record_type in records_list[record_rel]:
             for record in records_list[record_rel][record_type]:
-                content_item = ITEM.format(**record)
-                rosetta_link = record['rosetta']
-                if len(rosetta_link>0):
+                # content_item = ITEM.format(**record)
+                content_item = ITEM
+                rosetta_link = record['rosetta'] or ''
+                # print(rosetta_link)
+                # exit()
+                if len(rosetta_link) > 0:
+
                     view_online = VIEW_ONLINE
-                    view_online.replace('{roestta}',rosetta_link)
-                    content_item.replace('{view}',view_online)
+                    view_online = view_online.format(to_list(rosetta_link)[0].split('$$')[1][1:])
+                    content_item = content_item.replace('{view}',view_online)
+                else:
+                    content_item = content_item.replace('{view}', '')
+                content_item = content_item.format(**record)
                 if record_type == "other":
                     item_type = "other"
                 else:
@@ -132,9 +140,9 @@ def create_page_from_node(person_node, records_list, debug=None, create_category
 
     content += template
 
-    notes1 = record.get('670')
-    notes2 = record.get('678')
-    notes3 = record.get('680')
+    notes1 = this_record.get('670')
+    notes2 = this_record.get('678')
+    notes3 = this_record.get('680')
 
     notes = []
     for notes_i in (notes1, notes2, notes3):
