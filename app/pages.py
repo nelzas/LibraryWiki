@@ -222,7 +222,7 @@ def create_page_from_dictionary(item_dict, debug=None, create_category_pages=Fal
     content += "* מספר מערכת: [{} {}]\n".format(lib_link, sourcerecordid)
     content += "== קישורים נוספים ==\n"
     alef_link = ALEF_LINK.format(originalsourceid, sourcerecordid)
-    content += "* [{} הפריט בקטלוג הספריה]\n".format(alef_link)
+    content += "* [{} הפריט בקטלוג הספרייה הלאומית]\n".format(alef_link)
 
     browse = item_dict.get('browse')
     if browse:
