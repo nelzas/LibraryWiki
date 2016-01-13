@@ -38,7 +38,8 @@ for person_nodes in authorities:
                 'description' : record.node['title'], # TODO: same as title?
                 'date' : record_display.get('creationdate', 'לא ידוע'),
                 'notes' : record_notes,
-                'rosetta' : record_links.get('linktorsrc','')
+                'rosetta' : record_links.get('linktorsrc',''),
+                'fl' : record.node['fl'],
             }
             rel_type = record.rel_type # either author_of or subject_of
             # create_page_from_dictionary(record_dict)

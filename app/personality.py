@@ -15,16 +15,16 @@ CLOSEDIV = '</div>'
 VIEW_ONLINE = '([{} לצפיה])'
 
 ITEM = '{{|class="mw-collapsible mw-collapsed wikitable" width=100%' + CR + \
-    '!{view}&nbsp; {title} &nbsp;' + CR + \
-    LINE_BREAK + \
-    '| הפריט המלא: [[{nnl_prefix}{nnl}|{description}]]' + CR + \
-    LINE_BREAK + \
-    '|{notes}' + CR + \
-    LINE_BREAK + \
-    '|תאריך : {date}' + CR + \
-    LINE_BREAK + \
-    '|[http://primo.nli.org.il/primo_library/libweb/action/dlDisplay.do?vid=NLI&docId={nnl} הרשומה באתר הספרייה הלאומית ({nnl})]' + CR + \
-    '|}}' + CR
+       '!{view}&nbsp; {title} &nbsp;' + CR + \
+       LINE_BREAK + \
+       '| הפריט המלא: [[{nnl_prefix}{nnl}|{description}]]' + CR + \
+       LINE_BREAK + \
+       '|{notes}' + CR + \
+       LINE_BREAK + \
+       '|תאריך : {date}' + CR + \
+       LINE_BREAK + \
+       '|[http://primo.nli.org.il/primo_library/libweb/action/dlDisplay.do?vid=NLI&docId={nnl} הרשומה באתר הספרייה הלאומית ({nnl})]' + CR + \
+       '|}}' + CR
 
 template_name = "שם="
 template_image_url = "תמונה="
@@ -36,11 +36,14 @@ template_address = "מקום מגורים="
 template_other_names = "כינויים נוספים="
 template_occupation = "מקצוע="
 
+
 def personality_name(record):
     return record['person_name_heb']
 
+
 def item(record, tag, code):
     pass
+
 
 def get_if_exists(dict, *keys):
     dict0 = dict
@@ -50,6 +53,11 @@ def get_if_exists(dict, *keys):
         return dict0
     except:
         return ""
+
+
+def extract_link(links):
+    return to_list(links)[0].split('$$')[1][1:]
+
 
 def create_page_from_node(person_node, records_list, debug=None, create_category_pages=False):
     """
@@ -77,19 +85,19 @@ def create_page_from_node(person_node, records_list, debug=None, create_category
     address_country = get_if_exists(this_record, '371', 0, 'd')
 
     occupation = get_if_exists(this_record, '374', 0, 'a')
-    gender = get_if_exists(this_record, '375', 0, 'a') # MALE/FEMALE
+    gender = get_if_exists(this_record, '375', 0, 'a')  # MALE/FEMALE
     female = gender.lower() == "female"
 
     value_image_url = ""
 
     content = "{{DISPLAYTITLE:%s}}\n" % person_name
 
-    AUDIO = ["==פריטי שמע==",OPENDIV]
-    VIDEO = ["==פריטי וידאו==",OPENDIV]
-    BOOKS_BY = ["==ספרים שכתבה==" if female else "==ספרים שכתב==",OPENDIV]
-    BOOKS_ABOUT = ["==ספרים אודותיה==" if female else "==ספרים אודותיו==",OPENDIV]
-    IMAGES = ["==גלריית תמונות==",OPENDIV]
-    OTHER = ["==אחר==",OPENDIV]
+    AUDIO = ["==פריטי שמע==", OPENDIV]
+    VIDEO = ["==פריטי וידאו==", OPENDIV]
+    BOOKS_BY = ["==ספרים שכתבה==" if female else "==ספרים שכתב==", OPENDIV]
+    BOOKS_ABOUT = ["==ספרים אודותיה==" if female else "==ספרים אודותיו==", OPENDIV]
+    IMAGES = ["==גלריית תמונות==", OPENDIV]
+    OTHER = ["==אחר==", OPENDIV]
 
     for record_rel in records_list:
         for record_type in records_list[record_rel]:
@@ -102,13 +110,15 @@ def create_page_from_node(person_node, records_list, debug=None, create_category
                 if len(rosetta_link) > 0:
 
                     view_online = VIEW_ONLINE
-                    view_online = view_online.format(to_list(rosetta_link)[0].split('$$')[1][1:])
-                    content_item = content_item.replace('{view}',view_online)
+                    view_online = view_online.format(extract_link(rosetta_link))
+                    content_item = content_item.replace('{view}', view_online)
                 else:
                     content_item = content_item.replace('{view}', '')
                 content_item = content_item.format(**record)
                 if record_rel == 'portrait_of':
-                        value_image_url = record['rosetta']
+                    value_image_url = '<img src="http://rosetta.nli.org.il/delivery/DeliveryManagerServlet?' \
+                                      'dps_pid={}&dps_func=stream"' \
+                                      ' style="max-height: 500px; max-width: 300px;"/>'.format(record['fl'])
 
                 if record_type == "other":
                     item_type = "other"
@@ -124,7 +134,7 @@ def create_page_from_node(person_node, records_list, debug=None, create_category
                 elif item_type == 'video':
                     VIDEO.append(content_item)
                 elif item_type == 'image':
-                        IMAGES.append(content_item)
+                    IMAGES.append(content_item)
                 else:
                     OTHER.append(content_item)
 
@@ -136,7 +146,7 @@ def create_page_from_node(person_node, records_list, debug=None, create_category
         .replace(template_death_place, template_death_place + death_place) \
         .replace(template_other_names, template_other_names + other_names_value) \
         .replace(template_occupation, template_occupation + occupation) \
-        .replace(template_image_url,template_image_url+value_image_url)
+        .replace(template_image_url, template_image_url + value_image_url)
 
     content += template
 
@@ -154,12 +164,12 @@ def create_page_from_node(person_node, records_list, debug=None, create_category
         content += "".join(note['a'] + BR for note in notes)
 
     content += CR + \
-        CR.join(BOOKS_BY) + CLOSEDIV + CR + \
-        CR.join(BOOKS_ABOUT) + CLOSEDIV + CR + \
-        CR.join(AUDIO) + CLOSEDIV + CR + \
-        CR.join(VIDEO) + CLOSEDIV + CR + \
-        CR.join(IMAGES) + CLOSEDIV + CR + \
-        CR.join(OTHER) + CLOSEDIV + CR
+               CR.join(BOOKS_BY) + CLOSEDIV + CR + \
+               CR.join(BOOKS_ABOUT) + CLOSEDIV + CR + \
+               CR.join(AUDIO) + CLOSEDIV + CR + \
+               CR.join(VIDEO) + CLOSEDIV + CR + \
+               CR.join(IMAGES) + CLOSEDIV + CR + \
+               CR.join(OTHER) + CLOSEDIV + CR
 
     if debug:
         print(content)
