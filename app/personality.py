@@ -6,11 +6,13 @@ import json
 with open("templates/personality.wiki.template") as f:
     TEMPLATE = f.read()
 
-COLLAPSIBLE = 'class="mw-collapsible mw-collapsed wikitable"'
+COLLAPSIBLE = 'class="mw-collapsible mw-collapsed wikitable" width=100%'
 LINE_BREAK = '|-' + CR
+OPENDIV = '<div style="width: 600px;">'
+CLOSEDIV = '</div>'
 
-ITEM = '{{|class="mw-collapsible mw-collapsed wikitable"' + CR + \
-    '!([http://rosetta.nli.org.il/delivery/action/cmsResolver.do?cmsSystem=NNL01&cmsRecordId={nnl} לצפיה])&nbsp; {title} &nbsp;' + CR + \
+ITEM = '{{|class="mw-collapsible mw-collapsed wikitable" width=100%' + CR + \
+    '!([rosetta.nli.org.il/delivery/DeliveryManagerServlet?dps_pid={rosetta} לצפיה])&nbsp; {title} &nbsp;' + CR + \
     LINE_BREAK + \
     '| הפריט המלא: [[{nnl_prefix}{nnl}|{description}]]' + CR + \
     LINE_BREAK + \
@@ -77,38 +79,14 @@ def create_page_from_node(person_node, records_list, debug=None, create_category
 
     value_image_url = ""
 
-    template = TEMPLATE \
-        .replace(template_name, template_name + person_name) \
-        .replace(template_birth_date, template_birth_date + birth_date) \
-        .replace(template_death_date, template_death_date + death_date) \
-        .replace(template_birth_place, template_birth_place + birth_place) \
-        .replace(template_death_place, template_death_place + death_place) \
-        .replace(template_other_names, template_other_names + other_names_value) \
-        .replace(template_occupation, template_occupation + occupation) \
-
     content = "{{DISPLAYTITLE:%s}}\n" % person_name
 
-    content += template
-
-    notes1 = record.get('670')
-    notes2 = record.get('678')
-    notes3 = record.get('680')
-
-    notes = []
-    for notes_i in (notes1, notes2, notes3):
-        if notes_i:
-            notes += notes_i
-
-    if notes:
-        content += CR
-        content += "".join(note['a'] + BR for note in notes)
-
-    AUDIO = ["==פריטי שמע=="]
-    VIDEO = ["==פריטי וידאו=="]
-    BOOKS_BY = ["==ספרים שכתבה==" if female else "==ספרים שכתב=="]
-    BOOKS_ABOUT = ["==ספרים אודותיה==" if female else "==ספרים אודותיו=="]
-    IMAGES = ["==גלריית תמונות=="]
-    OTHER = ["==אחר=="]
+    AUDIO = ["==פריטי שמע==",OPENDIV]
+    VIDEO = ["==פריטי וידאו==",OPENDIV]
+    BOOKS_BY = ["==ספרים שכתבה==" if female else "==ספרים שכתב==",OPENDIV]
+    BOOKS_ABOUT = ["==ספרים אודותיה==" if female else "==ספרים אודותיו==",OPENDIV]
+    IMAGES = ["==גלריית תמונות==",OPENDIV]
+    OTHER = ["==אחר==",OPENDIV]
 
     for record_rel in records_list:
         for record_type in records_list[record_rel]:
@@ -128,17 +106,45 @@ def create_page_from_node(person_node, records_list, debug=None, create_category
                 elif item_type == 'video':
                     VIDEO.append(content_item)
                 elif item_type == 'image':
-                    IMAGES.append(content_item)
+                    if record_rel == 'portrait_of':
+                        value_image_url = record['rosetta']
+                    else:
+                        IMAGES.append(content_item)
                 else:
                     OTHER.append(content_item)
 
+    template = TEMPLATE \
+        .replace(template_name, template_name + person_name) \
+        .replace(template_birth_date, template_birth_date + birth_date) \
+        .replace(template_death_date, template_death_date + death_date) \
+        .replace(template_birth_place, template_birth_place + birth_place) \
+        .replace(template_death_place, template_death_place + death_place) \
+        .replace(template_other_names, template_other_names + other_names_value) \
+        .replace(template_occupation, template_occupation + occupation) \
+        .replace(template_image_url,template_image_url+value_image_url)
+
+    content += template
+
+    notes1 = record.get('670')
+    notes2 = record.get('678')
+    notes3 = record.get('680')
+
+    notes = []
+    for notes_i in (notes1, notes2, notes3):
+        if notes_i:
+            notes += notes_i
+
+    if notes:
+        content += CR
+        content += "".join(note['a'] + BR for note in notes)
+
     content += CR + \
-        CR.join(BOOKS_BY) + CR + \
-        CR.join(BOOKS_ABOUT) + CR + \
-        CR.join(AUDIO) + CR + \
-        CR.join(VIDEO) + CR + \
-        CR.join(IMAGES) + CR + \
-        CR.join(OTHER) + CR
+        CR.join(BOOKS_BY) + CLOSEDIV + CR + \
+        CR.join(BOOKS_ABOUT) + CLOSEDIV + CR + \
+        CR.join(AUDIO) + CLOSEDIV + CR + \
+        CR.join(VIDEO) + CLOSEDIV + CR + \
+        CR.join(IMAGES) + CLOSEDIV + CR + \
+        CR.join(OTHER) + CLOSEDIV + CR
 
     if debug:
         print(content)

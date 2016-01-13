@@ -25,6 +25,7 @@ for person_nodes in authorities:
             record_control = record_data['control']
             record_display = record_data['display']
             record_type = record_display['type']
+            record_links = record_data['links']
             record_notes = record_display.get('lds05',[""])
             if type(record_notes) is str:
                 record_notes = [record_notes]
@@ -36,6 +37,7 @@ for person_nodes in authorities:
                 'description' : record.node['title'], # TODO: same as title?
                 'date' : record_display.get('creationdate', 'לא ידוע'),
                 'notes' : record_notes,
+                'rosetta' : record_links['linktorsrc']
             }
             rel_type = record.rel_type # either author_of or subject_of
             # create_page_from_dictionary(record_dict)
