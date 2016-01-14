@@ -21,47 +21,12 @@
 #      '681': 'biography',
 #      }
 from collections import defaultdict
-import xmltodict
-import json
-import re
+from functools import partial
 
-
-def get_authorities(from_id = 0, to_id = 999999999):
-    with open('/home/adir/Downloads/nnl10all.xml') as f:
-        buffer = ''
-        id = 0
-        line = f.readline()
-        while not line.strip().endswith('">'):
-            line = f.readline()
-
-        for line in f:
-            if not id:
-                groups = re.match(r'  <controlfield tag="001">(\d*)</controlfield>', line)
-                if groups:
-                    id = int(groups.group(1))
-            buffer += line
-            if line.strip() == "</record>":
-                if id >= from_id and id <= to_id:
-                    record = xmltodict.parse(buffer)['record']
-                    result = {k: record[k] for k in record if k == "controlfield" or k == "datafield"}
-                    yield result
-                buffer = ''
-                id = 0
-
-
-codes = {
-    '100': 'person_name',
-    '151': 'location_name',
-    '046': 'life_span',
-    '371': 'address',
-    '374': 'occupation',
-    '375': 'gender',
-    '377': 'language',
-    '681': 'biography',
-}
-
-PUNCTUATION = ",.:!;?"
-BRACKETS = "<>"
+PUNCTUATION = {',', '.', ':', '!', ';', '?'}
+BRACKETS = {'<', '>'}
+PUNCTUATION_AND_BRACKETS = PUNCTUATION.copy()
+PUNCTUATION_AND_BRACKETS.update(BRACKETS)
 
 
 def remove_all(line, chars_to_remove):
@@ -78,50 +43,58 @@ def trim_last(line, chars_to_remove):
     return clean_line
 
 
-def parse_name(subfields):
+def handle_names(subfields):
+    subfield_a = subfields.get('a') or ""
+    subfield_b = subfields.get('b') or ""
+    subfield_c = subfields.get('c') or ""
+    subfield_d = subfields.get('d') or ""
+    lang = subfields['9']
+    result = parse_name(subfield_a, subfield_b, subfield_c, lang)
+    result.update(absolute_name(subfield_a, subfield_b, subfield_c, subfield_d, lang))
+    return result
+
+
+def parse_name(subfield_a, subfield_b, subfield_c, lang):
     """
     Rules:
     Remove punctuation from end of tag 'a'
     Remove all punctuation from tags 'b' and 'c'
     Remoe all brackets "<" and ">" from all tags
-    :param subfields:
+    :param subfield_a
+    :param subfield_b
+    :param subfield_c
+    :param lang
     :return: person_name_lang, name where lang is subfield '9'
     """
-    subfield_a = subfields.get('a') or ""
-    subfield_b = subfields.get('b') or ""
-    subfield_c = subfields.get('c') or ""
 
-    subfield_a = trim_last(subfield_a, PUNCTUATION)
-    subfield_a = remove_all(subfield_a, BRACKETS)
-    subfield_b = remove_all(subfield_b, PUNCTUATION + BRACKETS)
-    subfield_c = remove_all(subfield_c, PUNCTUATION + BRACKETS)
+    subfield_a_processed = trim_last(subfield_a, PUNCTUATION)
+    subfield_a_processed = remove_all(subfield_a_processed, BRACKETS)
+    subfield_b_processed = remove_all(subfield_b, PUNCTUATION_AND_BRACKETS)
+    subfield_c_processed = remove_all(subfield_c, PUNCTUATION_AND_BRACKETS)
 
-    name = subfield_a + (" " if subfield_b else "") + subfield_b + (" " if subfield_c else "") + subfield_c
-    lang = subfields['9']
-    return "person_name_" + lang, name
+    name = subfield_a_processed + (" " if subfield_b_processed else "") + subfield_b_processed + (
+        " " if subfield_c_processed else "") + subfield_c_processed
+    return {"person_name_" + lang: name.strip()}
 
 
-def parse_lang(tag, subfields):
-    return "{}_{}".format(tag, subfields['9']), subfields['a']
+def absolute_name(subfield_a, subfield_b, subfield_c, subfield_d, lang):
+    if lang != 'lat':
+        return {}
+    absolute = subfield_a + (" " if subfield_b else "") + subfield_b + (" " if subfield_c else "") + subfield_c + (
+        " " if subfield_d else "") + subfield_d
+    return {"person_name_absolute": absolute.strip()}
+
+
+def parse_lang(subfields):
+    return {"{}_{}".format('location_name', subfields['9']): subfields['a']}
 
 
 def parse_dates(subfields):
-    dates = []
-    context = ('from ', 'until ')
-    state = 0
-    if subfields.get('s'):
-        dates.append(subfields.get('s'))
-    if subfields.get('t'):
-        dates.append(subfields.get('t'))
-        state = 1
-    if subfields.get('f'):
-        dates.append(subfields.get('f'))
-    if subfields.get('g'):
-        dates.append(subfields.get('g'))
-        state = 1
-    if len(dates) == 1:
-        return context[state] + dates[0]
-    return dates[0] + "-" + dates[1]
+    dates = [None, None]
+    contexts = ('from', 'until')
+    dates[0] = subfields.get('s') or subfields.get('f')
+    dates[1] = subfields.get('t') or subfields.get('g')
+    return {context: date for context, date in zip(contexts, dates) if date}
 
 
 def parse_address(subfields):
@@ -129,64 +102,44 @@ def parse_address(subfields):
 
     def no_none(param):
         nonlocal first
-        addr = subfields.get(param) or ''
+        address = subfields.get(param) or ''
         if first:
-            if addr:
+            if address:
                 first = False
-            return addr
-        if addr:
-            return ', ' + addr
-        return addr
+            return address
+        if address:
+            return ', ' + address
+        return address
 
-    return no_none('a') + no_none('b') + no_none('c')
+    return {'address': no_none('a') + no_none('b') + no_none('c')}
 
 
 def parse_tag(tag, subfields):
-    if tag == 'person_name':
-        return parse_name(subfields)
-    if tag == 'location_name':
-        return parse_lang(tag, subfields)
-    if tag == 'life_span':
-        return tag, parse_dates(subfields)
-    if tag == 'address':
-        return tag, parse_address(subfields)
-    if tag == 'occupation' or tag == 'gender' or tag == 'language' or tag == 'biography':
-        return tag, subfields['a']
+    return {tag: subfields['a']}
+
+
+CODES = {
+    '100': handle_names,
+    '151': parse_lang,
+    '046': parse_dates,
+    '371': parse_address,
+    '374': partial(parse_tag, 'occupation'),
+    '375': partial(parse_tag, 'gender'),
+    '377': partial(parse_tag, 'language'),
+    '681': partial(parse_tag, 'biography'),
+}
 
 
 def to_list(item):
-    return item if type(item) is list else [item] or []
+    return item if type(item) is list else [item]
 
 
-def conv_dict(d):
+def convert_dict(d):
     tags = defaultdict(list)
-    for tag in d['datafield']:
+    for tag in d['datafield'] + d['controlfield']:
+        tags[tag['@tag']].append({k: v for k, v in tag.items() if k != '@tag' and k != 'subfield'})
         if not tag.get('subfield'):
             continue
-        tags[tag['@tag']].append({k: v for k, v in tag.items() if k != '@tag' and k != 'subfield'})
         for sub in to_list(tag['subfield']):
             tags[tag['@tag']][-1][sub['@code']] = sub['#text']
     return tags
-
-
-def db_auth(from_id = 0, to_id = 999999999):
-    for record in get_authorities(from_id, to_id):
-        if not record.get('datafield'):
-            continue
-        properties = {'id': record['controlfield'][2]['#text'], 'data': json.dumps(conv_dict(record))}
-        if record.get('datafield'):
-            dat = to_list(record['datafield'])
-            tags = [codes.get(data['@tag']) or data['@tag'] for data in dat]
-            if codes['100'] in tags:
-                properties['type'] = 'person'
-            elif codes['151'] in tags:
-                properties['type'] = 'location'
-            else:
-                pass
-            if tags and dat[0].get('subfield'):
-                for i, tag in enumerate(tags):
-                    subfields = {sub['@code']: sub['#text'] for sub in to_list(dat[i].get('subfield'))}
-                    info = parse_tag(tags[i], subfields)
-                    if info:
-                        properties[info[0]] = info[1]
-                yield properties
