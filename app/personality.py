@@ -1,8 +1,22 @@
+import re
 from app.authorities import to_list
 from app.pages import CR, BR, simple_person_name, date8_to_heb_date
 from app.wiki import create_wiki_page, create_redirect_wiki_page
 from app.__init__ import *
 import json
+
+find_ie = re.compile(r"dps_pid=IE(\d+)").search
+VIEW_TEMPLATE = '''|<img src="http://rosetta.nli.org.il/delivery/DeliveryManagerServlet?dps_pid={}&dps_func=thumbnail"/>
+|-
+'''
+
+
+def generate_thumb(rosetta_links):
+    ies = [find_ie(link).group(1) for link in to_list(rosetta_links) if find_ie(link)]
+    if ies:
+        return VIEW_TEMPLATE.format(ies[0])
+    return ''
+
 
 with open("templates/personality.wiki.template") as f:
     TEMPLATE = f.read()
@@ -17,6 +31,7 @@ GALLERY_ITEM = '''| width="200" |[http://rosetta.nli.org.il/delivery/DeliveryMan
 ITEM = '{{|class="mw-collapsible mw-collapsed wikitable" width=100%' + CR + \
        '!{view}&nbsp; {title} &nbsp;' + CR + \
        LINE_BREAK + \
+       '{thumb}' + \
        '| הפריט המלא: [[{nnl_prefix}{nnl}|{description}]]' + CR + \
        LINE_BREAK + \
        '|{notes}' + CR + \
@@ -113,6 +128,7 @@ def create_page_from_node(person_node, records_list, debug=None, create_category
                     view_online = VIEW_ONLINE
                     view_online = view_online.format(extract_link(rosetta_link))
                     content_item = content_item.replace('{view}', view_online)
+                    content_item = content_item.replace('{thumb}', generate_thumb(rosetta_link))
                 else:
                     content_item = content_item.replace('{view}', '')
                 content_item = content_item.format(**record)
