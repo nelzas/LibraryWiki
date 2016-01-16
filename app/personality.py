@@ -5,7 +5,7 @@ from app.wiki import create_wiki_page, create_redirect_wiki_page
 from app.__init__ import *
 import json
 
-find_ie = re.compile(r"dps_pid=IE(\d+)").search
+find_ie = re.compile(r"dps_pid=(IE\d+)").search
 VIEW_TEMPLATE = '''|<img src="http://rosetta.nli.org.il/delivery/DeliveryManagerServlet?dps_pid={}&dps_func=thumbnail"/>
 |-
 '''
