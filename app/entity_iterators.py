@@ -85,7 +85,7 @@ class Portraits(Photos):
         return Portrait
 
 
-DUMP_PATH = '/home/adir/Downloads/nnl10all.xml'
+DUMP_PATH = '/home/user2016/LibraryWiki/app/nnl10kita.xml'
 
 
 def get_authorities(from_id=0, to_id=999999999):
