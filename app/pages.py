@@ -198,6 +198,11 @@ def create_page_from_dictionary(item_dict, debug=None, create_category_pages=Fal
 
     creation_verb = type_dict[item_type][2]
     creators_field = display.get('creator')
+    if creators_field:
+        creators_field += creators_field + ';' + display.get('contributor')
+    else:
+        creators_field = display.get('contributor')
+
     creator = None
     if creators_field:
         authors_to_id = entries_to_authority_id(str_to_list(item_dict['browse']['author']))
