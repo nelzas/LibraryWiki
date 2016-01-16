@@ -43,7 +43,8 @@ class Results:
 
     def _get_results(self):
         if self._search().get('DOC'):
-            return [item['PrimoNMBib']['record'] for item in to_list(self._search()['DOC'])]
+            return [item['PrimoNMBib']['record'] for item in to_list(self._search()['DOC']) if
+                    item.get('PrimoNMBib') and item['PrimoNMBib'].get('record')]
         return []
 
     def __len__(self):
@@ -53,7 +54,11 @@ class Results:
         res = get(self._search_url.format(self.query, 1 + (self.page - 1) * self.count, self.count))
         if res.status_code == 500:
             raise StopIteration
-        return res.json()['SEGMENTS']['JAGROOT']['RESULT']['DOCSET']
+        try:
+            return res.json()['SEGMENTS']['JAGROOT']['RESULT']['DOCSET']
+        except:
+            print('oh.')
+            raise StopIteration
 
 
 class Photos(Results):
@@ -107,6 +112,9 @@ def get_authorities(from_id=0, to_id=999999999):
                     record = xmltodict.parse(buffer)['record']
                     result = {k: record[k] for k in record if k == "controlfield" or k == "datafield"}
                     if result.get('datafield'):
-                        yield Authority(app.authorities.convert_dict(result))
+                        try:
+                            yield Authority(app.authorities.convert_dict(result))
+                        except:
+                            pass
                 buffer = ''
                 auth_id = 0

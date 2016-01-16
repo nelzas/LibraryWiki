@@ -95,8 +95,8 @@ def extract_authority(relationship, authorities):
     return authorities.get(relationship) and {find_id(authority).group()[6:-2] for authority in
                                               authorities[relationship] if find_id(authority)}
 
-set_entities(get_authorities())
-set_entities(Results('NNL_ALEPH'))
-create_records_authorities_relationships()
-set_portraits()
-set_photos()
+# set_entities(get_authorities())
+# set_entities(Results('NNL_ALEPH'))
+# create_records_authorities_relationships()
+# set_portraits()
+# set_photos()
