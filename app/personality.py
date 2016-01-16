@@ -18,12 +18,12 @@ def generate_thumb(rosetta_links):
     return ''
 
 
-with open("templates/personality.wiki.template") as f:
+with open("templates/personality.wiki.template", encoding="utf8") as f:
     TEMPLATE = f.read()
 
 COLLAPSIBLE = 'class="mw-collapsible mw-collapsed wikitable" width=100%'
 LINE_BREAK = '|-' + CR
-OPENDIV = '<div style="width: 600px;">'
+OPENDIV = '<div style="width: 750px;">'
 CLOSEDIV = '</div>'
 
 VIEW_ONLINE = '([{} לצפיה])'
@@ -38,7 +38,7 @@ ITEM = '{{|class="mw-collapsible mw-collapsed wikitable" width=100%' + CR + \
        LINE_BREAK + \
        '|תאריך : {date}' + CR + \
        LINE_BREAK + \
-       '|[http://primo.nli.org.il/primo_library/libweb/action/dlDisplay.do?vid=NLI&docId={nnl} הרשומה באתר הספרייה הלאומית ({nnl})]' + CR + \
+       '|[http://primo.nli.org.il/primo_library/libweb/action/dlDisplay.do?vid=NLI&docId={nnl_prefix}{nnl} הרשומה באתר הספרייה הלאומית ({nnl})]' + CR + \
        '|}}' + CR
 
 template_name = "שם="
@@ -118,29 +118,39 @@ def create_page_from_node(person_node, records_list, debug=None, create_category
     for record_rel in records_list:
         for record_type in records_list[record_rel]:
             for record in records_list[record_rel][record_type]:
+                # getting record type
+                if record_type == "other":
+                    item_type = "other"
+                else:
+                    item_type = type_dict.get(record_type.lower())[3]
+
+                # temporary - skip over non-hebrew records
+                if item_type == 'print':
+                    if record['language']:
+                        if record['language']!='heb':
+                            continue
                 # content_item = ITEM.format(**record)
                 content_item = ITEM
                 rosetta_link = record['rosetta'] or ''
-                # print(rosetta_link)
-                # exit()
                 if len(rosetta_link) > 0:
-
+                    # handling the 'view' button & thumbnail image
                     view_online = VIEW_ONLINE
                     view_online = view_online.format(extract_link(rosetta_link))
                     content_item = content_item.replace('{view}', view_online)
-                    content_item = content_item.replace('{thumb}', generate_thumb(rosetta_link))
+                    thumb_value = generate_thumb(rosetta_link)
+                    if thumb_value:
+                        content_item = content_item.replace('{thumb}',thumb_value)
+                    else:
+                        content_item = content_item.replace('{thumb}','')
                 else:
                     content_item = content_item.replace('{view}', '')
+                    content_item = content_item.replace('{thumb}','')
                 content_item = content_item.format(**record)
                 if record_rel == 'portrait_of':
                     value_image_url = '<img src="http://rosetta.nli.org.il/delivery/DeliveryManagerServlet?' \
                                       'dps_pid={}&dps_func=stream"' \
                                       ' style="max-height: 500px; max-width: 300px;"/>'.format(record['fl'])
 
-                if record_type == "other":
-                    item_type = "other"
-                else:
-                    item_type = type_dict.get(record_type.lower())[3]
                 if item_type == 'print':
                     if record_rel == 'subject_of':
                         BOOKS_ABOUT.append(content_item)

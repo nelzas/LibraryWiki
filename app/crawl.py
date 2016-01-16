@@ -8,7 +8,7 @@ import json
 py2neo.authenticate(NEO4J_URL, NEO4J_USER, NEO4J_PASSWORD)
 graph = py2neo.Graph('http://' + NEO4J_URL + NEO4J_GRAPH)
 authorities = graph.cypher.execute('match (n:Person) where exists(n.person_name_heb) return n')
-# authorities = graph.cypher.execute("match (n:Person) where n.id = '000121498' return n")
+#authorities = graph.cypher.execute("match (n:Person) where n.id = '000017959' return n")
 # authorities = graph.cypher.execute('match (p:Person)-[]-(r) with p, count(r) as rels where exists(p.person_name_heb) and rels > 0 return p')
 
 for person_nodes in authorities:
@@ -40,6 +40,7 @@ for person_nodes in authorities:
                 'notes' : record_notes,
                 'rosetta' : record_links.get('linktorsrc',''),
                 'fl' : record.node['fl'],
+                'language' : record_display.get('language','heb')
             }
             rel_type = record.rel_type # either author_of or subject_of
             # create_page_from_dictionary(record_dict)
