@@ -1,4 +1,6 @@
 import re
+from time import sleep
+
 from requests import get
 import app.authorities
 from app.authorities import to_list
@@ -51,7 +53,20 @@ class Results:
         return int(self._search()['@TOTALHITS'])
 
     def _search(self):
-        res = get(self._search_url.format(self.query, 1 + (self.page - 1) * self.count, self.count))
+        retries = 0
+        while True:
+            try:
+                res = get(self._search_url.format(self.query, 1 + (self.page - 1) * self.count, self.count))
+            except:
+                if retries > 10:
+                    raise StopIteration
+                retries += 1
+                print('connection issue...')
+                sleep(5)
+                continue
+            break
+        if retries:
+            print('all fine!')
         if res.status_code == 500:
             raise StopIteration
         try:
