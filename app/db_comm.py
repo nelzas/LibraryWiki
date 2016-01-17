@@ -29,10 +29,10 @@ def set_entities(entities):
 
 
 def set_portraits():
-    people = graph.cypher.execute(
-        "match (n:Person) where exists(n.person_name_absolute) return n.person_name_absolute as name, n as node")
     # people = graph.cypher.execute(
-    # "match (n:Person) where n.id = '000121498' return n.person_name_heb as name, n as node")
+    #     "match (n:Person) where exists(n.person_name_absolute) return n.person_name_absolute as name, n as node")
+    people = graph.cypher.execute(
+        "match (n:Person) where n.id = '000091550' return n.person_name_absolute as name, n as node")
     for person in people:
         authority_portrait(person)
 
@@ -47,17 +47,17 @@ def authority_portrait(authority):
 
 
 def set_photos():
-    people = graph.cypher.execute(
-        "match (n:Person) where exists(n.person_name_heb) return n.person_name_heb as name, n as node")
     # people = graph.cypher.execute(
-    # "match (n:Person) where n.id = '000121498' return n.person_name_heb as name, n as node")
+    #     "match (n:Person) where exists(n.person_name_heb) return n.person_name_heb as name, n as node")
+    people = graph.cypher.execute(
+        "match (n:Person) where n.id = '000091550' return n.person_name_heb as name, n as node")
     for person in people:
         authority_photos(person)
 
 
 def authority_photos(authority):
     query = authority.name
-    photos = Photos(query)
+    photos = Photos("מאיר, גולדה, 1898-1978")
     for photo in photos:
         portrait_node = create_entity(photo)
         graph.create_unique(py2neo.Relationship(authority.node, "subject_of", portrait_node))
@@ -98,5 +98,5 @@ def extract_authority(relationship, authorities):
 # set_entities(get_authorities())
 # set_entities(Results('NNL_ALEPH'))
 # create_records_authorities_relationships()
-# set_portraits()
-# set_photos()
+set_portraits()
+set_photos()
