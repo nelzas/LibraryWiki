@@ -10,4 +10,5 @@ def to_node(authority):
 
 for i in range(30):
     graph.create(
-        [to_node(authority) for authority in get_authorities(from_id=200000 + 100000 * i, to_id=300000 + 100000 * i)])
+        *[to_node(authority) for authority in get_authorities(from_id=200000 + 100000 * i, to_id=300000 + 100000 * i)])
+    print('yo')
