@@ -131,5 +131,7 @@ def get_authorities(from_id=0, to_id=999999999):
                             yield Authority(app.authorities.convert_dict(result))
                         except:
                             pass
+                elif auth_id > to_id:
+                    raise GeneratorExit
                 buffer = ''
                 auth_id = 0
