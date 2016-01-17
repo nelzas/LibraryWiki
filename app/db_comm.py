@@ -100,4 +100,3 @@ def extract_authority(relationship, authorities):
 # create_records_authorities_relationships()
 # set_portraits()
 # set_photos()
-statement = py2neo.cypher.create.CreateStatement()
