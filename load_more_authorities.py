@@ -5,7 +5,7 @@ from app.entity_iterators import get_authorities
 
 
 def to_node(authority):
-    return py2neo.Node(*authority.labels, authority.properties)
+    return py2neo.Node(*authority.labels, **authority.properties)
 
 
 for i in range(30):
