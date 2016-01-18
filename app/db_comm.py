@@ -24,7 +24,7 @@ def create_entity(entity):
 
 
 def set_entities(entities):
-    for entity, _ in zip(entities, range(10)):
+    for entity, _ in zip(entities, range(500)):
         create_entity(entity)
 
 
@@ -66,9 +66,10 @@ def authority_photos(authority):
 def create_records_authorities_relationships():
     records = graph.cypher.execute("match (n:Record) return n as node, n.data as data")
     for record in records:
-        if not record.data or not record.data.get('browse'):
+        dat = eval(record.data)
+        if not record.data or not dat.get('browse'):
             continue
-        authors, subjects = authorities_of_record(eval(record.data).get('browse'))
+        authors, subjects = authorities_of_record(dat.get('browse'))
         if authors:
             create_relationship(authors, record.node, 'author_of')
         if subjects:
