@@ -64,7 +64,7 @@ def authority_photos(authority):
 
 
 def create_records_authorities_relationships():
-    records = graph.cypher.stream("match (n:Record) return n as node, n.data as data")
+    records = graph.cypher.execute("match (n:Record) return n as node, n.data as data")
     for record in records:
         if not record.data:
             continue
