@@ -66,7 +66,7 @@ def authority_photos(authority):
 def create_records_authorities_relationships():
     records = graph.cypher.execute("match (n:Record) return n as node, n.data as data")
     for record in records:
-        if not record.data:
+        if not record.data or not record.data.get('browse'):
             continue
         authors, subjects = authorities_of_record(eval(record.data).get('browse'))
         if authors:
