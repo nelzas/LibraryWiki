@@ -29,12 +29,14 @@ def set_entities(entities):
 
 
 def set_portraits():
-    people = graph.cypher.execute(
-        "match (n:Person) where exists(n.person_name_absolute) return n.person_name_absolute as name, n as node")
-    # people = graph.cypher.execute(
-    # "match (n:Person) where n.id = '000121498' return n.person_name_heb as name, n as node")
-    for person in people:
-        authority_portrait(person)
+    people = True
+    while people:
+        people = graph.cypher.execute(
+            "match (n:Person) where exists(n.person_name_absolute) and not (n)-[]->(:Record) return n.person_name_absolute as name, n as node limit 1000")
+        # people = graph.cypher.execute(
+        # "match (n:Person) where n.id = '000121498' return n.person_name_heb as name, n as node")
+        for person in people:
+            authority_portrait(person)
 
 
 def authority_portrait(authority):
