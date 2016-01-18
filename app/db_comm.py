@@ -24,7 +24,7 @@ def create_entity(entity):
 
 
 def set_entities(entities):
-    for entity, _ in zip(entities, range(500)):
+    for entity, _ in zip(entities, range(10)):
         create_entity(entity)
 
 
