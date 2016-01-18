@@ -72,7 +72,10 @@ class Photo(Record):
 
     def _get_fl(self):
         fl = None
-        fields = xmltodict.parse(get(self._fl_url).content)['find-doc']['record']['metadata']['oai_marc']['varfield']
+        fields = xmltodict.parse(get(self._fl_url).content)['find-doc'].get('record')
+        if not fields:
+            return None
+        fields = fields['metadata']['oai_marc']['varfield']
         for field in fields:
             if not isinstance(field, dict) or not field.get('@id'):
                 continue
