@@ -69,6 +69,7 @@ class Results:
             print('all fine!')
         if res.status_code == 500:
             raise StopIteration
+        return res.json()['SEGMENTS']['JAGROOT']['RESULT']['DOCSET']
         try:
             return res.json()['SEGMENTS']['JAGROOT']['RESULT']['DOCSET']
         except:
@@ -105,7 +106,7 @@ class Portraits(Photos):
         return Portrait
 
 
-DUMP_PATH = '/home/user2016/LibraryWiki/app/nnl10kita.xml'
+DUMP_PATH = '/home/adir/Downloads/nnl10all.xml'
 
 
 def get_authorities(from_id=0, to_id=999999999):
