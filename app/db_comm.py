@@ -69,14 +69,16 @@ def create_records_authorities_relationships():
         if not record.data:
             continue
         authors, subjects = authorities_of_record(eval(record.data).get('browse'))
-        create_relationship(authors, record.node, 'author_of')
-        create_relationship(subjects, record.node, 'subject_of')
+        if authors:
+            create_relationship(authors, record.node, 'author_of')
+        if subjects:
+            create_relationship(subjects, record.node, 'subject_of')
     graph.push()
 
 
 def authorities_of_record(authorities):
     if not authorities:
-        return
+        return None, None
     authors_set = extract_authority('author', authorities)
     subjects_set = extract_authority('subject', authorities)
     return authors_set, subjects_set
