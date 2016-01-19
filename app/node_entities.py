@@ -21,7 +21,8 @@ class Authority(Entity):
     def _build_properties(self):
         properties = {'data': json.dumps(self.data), 'id': self.data['001'][0]['#text']}
         for tag, subfields in self.data.items():
-            CODES.get(tag) and properties.update(CODES[tag](subfields[0]))
+            for subfield in subfields:
+                CODES.get(tag) and properties.update(CODES[tag](subfield))
         if '100' in self.data:
             properties['type'] = 'Person'
         elif '151' in self.data:
