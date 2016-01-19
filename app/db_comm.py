@@ -11,9 +11,11 @@ graph = py2neo.Graph('http://' + NEO4J_URL + NEO4J_GRAPH)
 
 
 def get_entity_node(entity):
-    print(entity)
-    exit()
-    return graph.merge_one(entity.labels[0], "id", entity.properties["id"])
+    try:
+        return graph.merge_one(entity.labels[0], "id", entity.properties["id"])
+    except:
+        print(entity)
+        exit()
 
 
 def create_entity(entity):
