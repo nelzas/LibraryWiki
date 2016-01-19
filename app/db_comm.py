@@ -58,7 +58,7 @@ def set_photos():
 def authority_photos(authority):
     query = authority.name
     photos = Photos(query)
-    for photo in zip(photos, range(10)):
+    for photo, _ in zip(photos, range(10)):
         portrait_node = create_entity(photo)
         # graph.create_unique(py2neo.Relationship(authority.node, "subject_of", portrait_node))
 
