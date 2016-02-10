@@ -31,6 +31,7 @@ def date8_to_heb_date(date8):
     :param data8: 8 digits date YYYYMMDD, e.g. 18861006, or 6 digit YYYYMM or 4 digits YYYY
     :return: date in Hebrew, e.g. ״6 באוקטבר 1886״
     """
+    date8 = date8.replace("-","")
     if len(date8) == 0:
         return ""
     year = date8[0:4]

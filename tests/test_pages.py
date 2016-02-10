@@ -43,6 +43,8 @@ class MyTestCase(unittest.TestCase):
         self.assertEqual("1887", date8_to_heb_date("1887"))
         self.assertEqual("אוקטובר 1887", date8_to_heb_date("188710"))
         self.assertEqual("5 באוקטובר 1887", date8_to_heb_date("18871005"))
+        self.assertEqual("אוקטובר 1887", date8_to_heb_date("1887-10"))
+        self.assertEqual("5 באוקטובר 1887", date8_to_heb_date("1887-10-05"))
 
 if __name__ == '__main__':
     unittest.main()
