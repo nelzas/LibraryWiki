@@ -106,10 +106,10 @@ class Portraits(Photos):
         return Portrait
 
 
-DUMP_PATH = '/home/adir/Downloads/nnl10all.xml'
+# DUMP_PATH = '/home/adir/Downloads/nnl10all.xml'
+DUMP_PATH = '/Users/shaih/PycharmProjects/WikiLibrary/resources/authorities/nnl10kita.xml'
 
-
-def get_authorities(from_id=0, to_id=999999999):
+def get_authorities(from_id=0, to_id=999999999, list_authorities = []):
     with open(DUMP_PATH) as f:
         buffer = ''
         auth_id = 0
@@ -124,7 +124,8 @@ def get_authorities(from_id=0, to_id=999999999):
                     auth_id = int(groups.group(1))
             buffer += line
             if line.strip() == "</record>":
-                if from_id <= auth_id <= to_id:
+                if from_id <= auth_id <= to_id and (len(list_authorities) == 0 or auth_id in list_authorities):
+                    print(auth_id)
                     record = xmltodict.parse(buffer)['record']
                     result = {k: record[k] for k in record if k == "controlfield" or k == "datafield"}
                     if result.get('datafield'):
