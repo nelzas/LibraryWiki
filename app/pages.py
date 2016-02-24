@@ -32,6 +32,7 @@ def date8_to_heb_date(date8):
     :return: date in Hebrew, e.g. ״6 באוקטבר 1886״
     """
     date8 = date8.replace("-","")
+    date8 = date8.replace("~", "")
     if len(date8) == 0:
         return ""
     year = date8[0:4]
@@ -237,7 +238,9 @@ def create_page_from_dictionary(item_dict, debug=None, create_category_pages=Fal
         lib_link = lib_link[lib_link.find("http"):]
 
     content = "{{DISPLAYTITLE:%s}}\n" % title
-    content += "{}'''{}''' {} על ידי {}".format(display_type, title, creation_verb, creator)
+    content += "{}'''{}''' {}".format(display_type, title, creation_verb)
+    if creator:
+        content += " על ידי {}".format(creator)
 
     if (creationdate):
         content += " בשנת {}".format(creationdate)
