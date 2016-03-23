@@ -6,13 +6,13 @@ import app.authorities
 from app.authorities import to_list
 import xmltodict
 from app.node_entities import Authority, Record, Photo, Portrait
+from app.settings import DUMP_PATH
 
 PRIMO = 'primo.nli.org.il'
 
-
 class Results:
-    def __init__(self, query, count=200):
-        self.count = count
+    def __init__(self, query, max_results=200):
+        self.count = max_results
         self.query = query
         self.index = 0
         self.page = 1
@@ -78,8 +78,8 @@ class Results:
 
 
 class Photos(Results):
-    def __init__(self, query, count=200):
-        super().__init__(query, count)
+    def __init__(self, query, max_results=200):
+        super().__init__(query, max_results)
 
     @property
     def _search_url(self):
@@ -104,10 +104,6 @@ class Portraits(Photos):
     @property
     def entity_type(self):
         return Portrait
-
-
-# DUMP_PATH = '/home/adir/Downloads/nnl10all.xml'
-DUMP_PATH = '/Users/shaih/PycharmProjects/WikiLibrary/resources/authorities/nnl10kita.xml'
 
 def get_authorities(from_id=0, to_id=999999999, list_authorities = []):
     with open(DUMP_PATH) as f:
