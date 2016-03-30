@@ -22,13 +22,16 @@ def create_entity(entity):
     entity_node.properties.update(**entity.properties)
     for label in entity.labels:
         entity_node.labels.add(label)
-    entity_node.push()
     return entity_node
 
 
 def set_entities(entities):
-    for entity in entities:
-        create_entity(entity)
+    entity_list = []
+    for i, entity in enumerate(entities):
+        entity_list.append(create_entity(entity))
+        if i % 200 == 0:
+            graph.push(*entity_list)
+            entity_list = []
 
 
 def set_portraits():
