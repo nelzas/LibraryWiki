@@ -1,8 +1,11 @@
 import py2neo
 import re
+import os
+import sys
 from app.entity_iterators import Portraits, Photos, get_authorities, Results
 from app.settings import *
 from py2neo.packages.httpstream import http
+sys.path.append(os.path.join(os.getcwd(), '..'))
 
 http.socket_timeout = 9999
 
@@ -24,7 +27,7 @@ def create_entity(entity):
 
 
 def set_entities(entities):
-    for entity, _ in zip(entities, range(500)):
+    for entity in entities:
         create_entity(entity)
 
 
@@ -98,9 +101,10 @@ def extract_authority(relationship, authorities):
     return authorities.get(relationship) and {find_id(authority).group()[6:-2] for authority in
                                               authorities[relationship] if find_id(authority)}
 
-# set_entities(get_authorities())
+set_entities(get_authorities())
 # set_entities(Results('NNL_ALEPH'))
 # create_records_authorities_relationships()
 # set_portraits()
 # set_photos()
-graph.match()
+# graph.match()
+print("done")

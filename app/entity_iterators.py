@@ -1,6 +1,5 @@
 import re
 from time import sleep
-
 from requests import get
 import app.authorities
 from app.authorities import to_list
@@ -9,6 +8,7 @@ from app.node_entities import Authority, Record, Photo, Portrait
 from app.settings import DUMP_PATH
 
 PRIMO = 'primo.nli.org.il'
+
 
 class Results:
     def __init__(self, query, max_results=200):
@@ -105,7 +105,8 @@ class Portraits(Photos):
     def entity_type(self):
         return Portrait
 
-def get_authorities(from_id=0, to_id=999999999, list_authorities = []):
+
+def get_authorities(from_id=0, to_id=999999999, list_authorities=[]):
     with open(DUMP_PATH, encoding='utf8') as f:
         buffer = ''
         auth_id = 0
