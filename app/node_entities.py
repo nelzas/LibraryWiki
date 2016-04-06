@@ -27,6 +27,8 @@ class Authority(Entity):
             properties['type'] = 'Person'
         elif '151' in self.data:
             properties['type'] = 'Location'
+        elif '150' in self.data:
+            properties['type'] = 'Topic '
         else:
             properties['type'] = None
         return properties
