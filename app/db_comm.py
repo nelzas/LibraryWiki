@@ -2,10 +2,13 @@ import py2neo
 import re
 import os
 import sys
+import py2neo.cypher
+
+sys.path.append(os.path.join(os.getcwd(), '..'))
 from app.entity_iterators import Portraits, Photos, get_authorities, Results
 from app.settings import *
 from py2neo.packages.httpstream import http
-sys.path.append(os.path.join(os.getcwd(), '..'))
+from py2neo.cypher import MergeNode
 
 http.socket_timeout = 9999
 
@@ -14,7 +17,8 @@ graph = py2neo.Graph('http://' + NEO4J_URL + NEO4J_GRAPH)
 
 
 def get_entity_node(entity):
-        return graph.merge_one(entity.labels[0], "id", entity.properties["id"])
+    return py2neo.Node(*entity.labels, **entity.properties)
+    return graph.merge_one(entity.labels[0], "id", entity.properties["id"])
 
 
 def create_entity(entity):
@@ -26,12 +30,13 @@ def create_entity(entity):
 
 
 def set_entities(entities):
-    entity_list = []
+    tx = graph.cypher.begin()
     for i, entity in enumerate(entities):
-        entity_list.append(create_entity(entity))
+        tx.append(MergeNode(entity.labels[0], "id", entity.properties["id"]).set(*entity.labels, **entity.properties))
+        print(i)
         if i % 200 == 0:
-            graph.push(*entity_list)
-            entity_list = []
+            tx.commit()
+            tx = graph.cypher.begin()
 
 
 def set_portraits():
@@ -104,8 +109,9 @@ def extract_authority(relationship, authorities):
     return authorities.get(relationship) and {find_id(authority).group()[6:-2] for authority in
                                               authorities[relationship] if find_id(authority)}
 
-set_entities(get_authorities())
-# set_entities(Results('NNL_ALEPH'))
+
+set_entities(get_authorities(from_id=632890))
+# set_entities(Results('בן גוריון'))
 # create_records_authorities_relationships()
 # set_portraits()
 # set_photos()
