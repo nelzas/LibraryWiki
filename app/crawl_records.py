@@ -1,4 +1,8 @@
-from app.settings import *
+import os
+import sys
+
+sys.path.append(os.path.join(os.getcwd(), '..'))
+
 from app.pages import create_page_from_dictionary
 from app.personality import create_page_from_node
 import py2neo
