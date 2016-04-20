@@ -173,7 +173,7 @@ def limit_length(title):
     return stablize(b_title, 252) + '...'
 
 
-def create_page_from_dictionary(item_dict, debug=None, create_category_pages=False):
+def create_page_from_dictionary(item_dict, debug=None, create_category_pages=False, site=None):
     """
     create a wikipedia page from a dictionary that describes a primo item
     :param item_dict: primo item as a dictionary/json
@@ -272,8 +272,8 @@ def create_page_from_dictionary(item_dict, debug=None, create_category_pages=Fal
         title = clean_title(title)
         if is_hebrew(title):
             title = limit_length(title)
-            create_redirect_wiki_page(page_name=clean_title(title), redirect_to=document_id,
+            create_redirect_wiki_page(site, page_name=clean_title(title), redirect_to=document_id,
                                       summary="Creating redirect page for {}".format(document_id))
-        create_wiki_page(page_name=document_id, summary="Created from primo", content=content)
+        create_wiki_page(site, page_name=document_id, summary="Created from primo", content=content)
 
     return content
