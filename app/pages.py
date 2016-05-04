@@ -236,9 +236,9 @@ def create_page_from_dictionary(item_dict, debug=None, create_category_pages=Fal
     view_online = ''
     if rosetta_link:
         # handling the 'view' button & thumbnail image
-        view_online = VIEW_ONLINE
         thumb_value = generate_thumb_link(rosetta_link)
         if thumb_value:
+            view_online = VIEW_ONLINE
             view_online = view_online.replace('{IE}',thumb_value[0])
     creationdate = display.get('creationdate')
     ispartof = display.get('ispartof')
