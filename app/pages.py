@@ -1,6 +1,8 @@
 from app.wiki import create_wiki_page, create_redirect_wiki_page
+from app.utils import generate_thumb_link
 from app.__init__ import *
 import re
+
 
 CR = "\n"
 BR = "<br/>" + CR
@@ -8,6 +10,13 @@ LIST_ITEM = "* {} : {}\n"
 ALEF_LINK = "http://aleph.nli.org.il/F?func=direct&local_base={}&doc_number={}"
 WIKI_LINK = "[[{}|{}]]"  # first the link then the display text
 AUTHORITY_ID_PATTERN = "\$\$D(.*)\$\$E(.*)\$\$I(.*)\$\$P"  # e.g. "$$Dרכטר, יוני, 1951-$$Eרכטר, יוני, 1951-$$INNL10000110663$$PY M"
+# view online - is the template for placing the thumbnail and view online links in an item page
+VIEW_ONLINE = '{| class="wikitable" style="margin-left:0px;margin-right:auto"' + \
+'| width="120" height="120" style="vertical-align: middle; text-align: center" | [http://rosetta.nli.org.il/delivery/DeliveryManagerServlet?dps_pid={IE} <img src="http://rosetta.nli.org.il/delivery/DeliveryManagerServlet?dps_pid={IE}&dps_func=thumbnail" style="max-height:150px; max-width: 150px"/>]' + \
+'|-' + \
+'|{title} + ' + \
+'|}'
+
 
 month_num_to_heb_name = {
     '01': 'ינואר',
@@ -28,7 +37,7 @@ month_num_to_heb_name = {
 def date8_to_heb_date(date8):
     """
     convert 8 digit date to date in hebrew
-    :param data8: 8 digits date YYYYMMDD, e.g. 18861006, or 6 digit YYYYMM or 4 digits YYYY
+    :param date8: 8 digits date YYYYMMDD, e.g. 18861006, or 6 digit YYYYMM or 4 digits YYYY
     :return: date in Hebrew, e.g. ״6 באוקטבר 1886״
     """
     date8 = date8.replace("-","")
@@ -128,7 +137,7 @@ def trim(line):
 def handle_categories(browse, create_category_pages):
     subjects = {}
     if browse.get('subject'):
-        subjects = str_to_list(browse['subject']);
+        subjects = str_to_list(browse['subject'])
     nnl_to_subject = {}
     for subject in subjects:
         match = re.search(AUTHORITY_ID_PATTERN, subject)
@@ -222,6 +231,16 @@ def create_page_from_dictionary(item_dict, debug=None, create_category_pages=Fal
     if comments:
         comments_section = CR.join(["* " + comment for comment in comments])
 
+    # handle digital images: thumbnail display + links to digital images
+    rosetta_link = item_dict["links"]["linktorsrc"]
+    if len(rosetta_link) > 0:
+        # handling the 'view' button & thumbnail image
+        view_online = VIEW_ONLINE
+        thumb_value = generate_thumb_link(rosetta_link)
+        if thumb_value:
+            view_online = view_online.replace('{thumb}',thumb_value)
+        else:
+            view_online = ''
     creationdate = display.get('creationdate')
     ispartof = display.get('ispartof')
     performed_by = display.get('lds35')  # list
@@ -237,6 +256,7 @@ def create_page_from_dictionary(item_dict, debug=None, create_category_pages=Fal
         lib_link = item_dict['links']['linktorsrc']
         lib_link = lib_link[lib_link.find("http"):]
 
+    # Building page's Wikicode
     content = "{{DISPLAYTITLE:%s}}\n" % title
     content += "{}'''{}''' {}".format(display_type, title, creation_verb)
     if creator:
@@ -248,6 +268,9 @@ def create_page_from_dictionary(item_dict, debug=None, create_category_pages=Fal
     if summary:
         content += CR + summary + CR
 
+    if view_online:
+        if len(view_online)>0:
+            content += view_online + CR
     content += "==פרטים כלליים==" + CR
     if (performed_by_str):
         content += LIST_ITEM.format("שם מבצע", performed_by_str)
