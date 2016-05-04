@@ -14,7 +14,7 @@ AUTHORITY_ID_PATTERN = "\$\$D(.*)\$\$E(.*)\$\$I(.*)\$\$P"  # e.g. "$$Dרכטר, 
 VIEW_ONLINE = '{| class="wikitable" style="margin-left:0px;margin-right:auto"' + \
 '| width="120" height="120" style="vertical-align: middle; text-align: center" | [http://rosetta.nli.org.il/delivery/DeliveryManagerServlet?dps_pid={IE} <img src="http://rosetta.nli.org.il/delivery/DeliveryManagerServlet?dps_pid={IE}&dps_func=thumbnail" style="max-height:150px; max-width: 150px"/>]' + \
 '|-' + \
-'|{title} + ' + \
+'|{title}' + \
 '|}'
 
 
@@ -239,7 +239,7 @@ def create_page_from_dictionary(item_dict, debug=None, create_category_pages=Fal
         view_online = VIEW_ONLINE
         thumb_value = generate_thumb_link(rosetta_link)
         if thumb_value:
-            view_online = view_online.replace('{thumb}',thumb_value[0])
+            view_online = view_online.replace('{IE}',thumb_value[0])
     creationdate = display.get('creationdate')
     ispartof = display.get('ispartof')
     performed_by = display.get('lds35')  # list
