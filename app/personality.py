@@ -1,21 +1,8 @@
-import re
-from app.authorities import to_list
 from app.pages import CR, BR, simple_person_name, date8_to_heb_date
 from app.wiki import create_wiki_page, create_redirect_wiki_page
+from app.utils import generate_thumb_link, extract_link
 from app.__init__ import *
 import json
-
-find_ie = re.compile(r"dps_pid=(IE\d+)").search
-VIEW_TEMPLATE = '''|<img src="http://rosetta.nli.org.il/delivery/DeliveryManagerServlet?dps_pid={}&dps_func=thumbnail"/>
-|-
-'''
-
-
-def generate_thumb(rosetta_links):
-    ies = [find_ie(link).group(1) for link in to_list(rosetta_links) if find_ie(link)]
-    if ies:
-        return VIEW_TEMPLATE.format(ies[0])
-    return ''
 
 
 with open("templates/personality.wiki.template", encoding="utf8") as f:
@@ -40,6 +27,10 @@ ITEM = '{{|class="mw-collapsible mw-collapsed wikitable" width=100%' + CR + \
        LINE_BREAK + \
        '|[http://primo.nli.org.il/primo_library/libweb/action/dlDisplay.do?vid=NLI&docId={nnl_prefix}{nnl} הרשומה באתר הספרייה הלאומית ({nnl})]' + CR + \
        '|}}' + CR
+
+VIEW_TEMPLATE = '''|<img src="http://rosetta.nli.org.il/delivery/DeliveryManagerServlet?dps_pid={}&dps_func=thumbnail"/>
+|-
+'''
 
 template_name = "שם="
 template_image_url = "תמונה="
@@ -70,8 +61,16 @@ def get_if_exists(diction, *keys):
         return ""
 
 
-def extract_link(links):
-    return to_list(links)[0].split('$$')[1][1:]
+def generate_thumb(rosetta_links):
+    """
+    This function returns a thumbnail link in the format needed for personality pages
+    :param rosetta_links: that contains IE PID
+    :return: The part of a wiki-table to be used for displaying thumbnail
+    """
+    ies = generate_thumb_link(rosetta_links)
+    if ies:
+        return VIEW_TEMPLATE.format(ies[0])
+    return ''
 
 
 def create_page_from_node(person_node, records_list, debug=None, create_category_pages=False):
@@ -111,7 +110,7 @@ def create_page_from_node(person_node, records_list, debug=None, create_category
     VIDEO = ["==פריטי וידאו==", OPENDIV]
     BOOKS_BY = ["==ספרים שכתבה==" if female else "==ספרים שכתב==", OPENDIV]
     BOOKS_ABOUT = ["==ספרים אודותיה==" if female else "==ספרים אודותיו==", OPENDIV]
-    IMAGES = ["==גלריית תמונות==", '{| class="gallery"']
+    IMAGES = ["==גלריית תמונות==", '{| class="wikitable" border="1"']
     IMAGES_DESC = ['|-']
     OTHER = ["==אחר==", OPENDIV]
 
