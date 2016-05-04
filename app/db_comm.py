@@ -77,7 +77,11 @@ def authority_photos(authority):
 def create_records_authorities_relationships():
     records = graph.cypher.execute("match (n:Record) return n as node, n.data as data")
     for record in records:
-        dat = eval(record.data)
+        # record.data may contain more than one value
+        if type(record.data) is str:
+            dat = eval(record.data)
+        else:
+            dat = eval(record.data[0])
         if not record.data or not dat.get('browse'):
             continue
         authors, subjects = authorities_of_record(dat.get('browse'))
@@ -110,7 +114,7 @@ def extract_authority(relationship, authorities):
                                               authorities[relationship] if find_id(authority)}
 
 
-set_entities(get_authorities(from_id=632890))
+set_entities(get_authorities(from_id=0))
 # set_entities(Results('בן גוריון'))
 # create_records_authorities_relationships()
 # set_portraits()
