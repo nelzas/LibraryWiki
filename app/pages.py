@@ -232,15 +232,14 @@ def create_page_from_dictionary(item_dict, debug=None, create_category_pages=Fal
         comments_section = CR.join(["* " + comment for comment in comments])
 
     # handle digital images: thumbnail display + links to digital images
-    rosetta_link = item_dict["links"]["linktorsrc"]
-    if len(rosetta_link) > 0:
+    rosetta_link = item_dict["links"].get("linktorsrc")
+    view_online = ''
+    if rosetta_link:
         # handling the 'view' button & thumbnail image
         view_online = VIEW_ONLINE
         thumb_value = generate_thumb_link(rosetta_link)
         if thumb_value:
-            view_online = view_online.replace('{thumb}',thumb_value)
-        else:
-            view_online = ''
+            view_online = view_online.replace('{thumb}',thumb_value[0])
     creationdate = display.get('creationdate')
     ispartof = display.get('ispartof')
     performed_by = display.get('lds35')  # list
