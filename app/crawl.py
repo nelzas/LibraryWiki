@@ -1,20 +1,30 @@
+import os
+import sys
+
+sys.path.append(os.path.join(os.getcwd(), '..'))
+
 from app.settings import *
 from app.pages import create_page_from_dictionary
 from app.personality import create_page_from_node
+import mwclient
 import py2neo
 import json
 
-
+wiki_site = mwclient.Site(WIKI_SITE, path=WIKI_PATH)
+wiki_site.login(WIKI_USER, WIKI_PASSWORD)
 py2neo.authenticate(NEO4J_URL, NEO4J_USER, NEO4J_PASSWORD)
 graph = py2neo.Graph('http://' + NEO4J_URL + NEO4J_GRAPH)
 authorities = graph.cypher.execute('match (n:Person) where exists(n.person_name_heb) return n')
 #authorities = graph.cypher.execute("match (n:Person) where n.id = '000017959' return n")
 # authorities = graph.cypher.execute('match (p:Person)-[]-(r) with p, count(r) as rels where exists(p.person_name_heb) and rels > 0 return p')
 
+total_authorities = len(authorities)
+authority_index = 0
 for person_nodes in authorities:
     for person_node in person_nodes:
         person_id = person_node['id']
-        print("=============== " + person_id + " ================")
+        authority_index += 1
+        print("%s / %s. : %s " % (authority_index, total_authorities, person_id), end="")
         print(person_node['person_name_heb'])
         person_json = json.loads(person_node['data'])
         print(person_json)
@@ -47,7 +57,7 @@ for person_nodes in authorities:
             if record_type not in records_list[rel_type]:
                 records_list[rel_type][record_type] = []
             records_list[rel_type][record_type].append(record_fields)
-        create_page_from_node(person_node, records_list)
+        create_page_from_node(person_node, records_list, site=wiki_site)
             # try:
             #     create_page_from_node(person_node, records_list)
             # except Exception as e:

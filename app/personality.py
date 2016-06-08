@@ -1,3 +1,8 @@
+import os
+import sys
+
+sys.path.append(os.path.join(os.getcwd(), '..'))
+
 from app.pages import CR, BR, simple_person_name, date8_to_heb_date
 from app.wiki import create_wiki_page, create_redirect_wiki_page
 from app.utils import generate_thumb_link, extract_link
@@ -73,7 +78,7 @@ def generate_thumb(rosetta_links):
     return ''
 
 
-def create_page_from_node(person_node, records_list, debug=None, create_category_pages=False):
+def create_page_from_node(person_node, records_list, debug=None, create_category_pages=False, site=None):
     """
     Create a person page from a neo4j node
     :param person_node: neo4j node
@@ -208,6 +213,6 @@ def create_page_from_node(person_node, records_list, debug=None, create_category
         redicrect_page_name = "אישיות:" + person_name
         # create_redirect_wiki_page(page_name=redicrect_page_name, redirect_to=wiki_page_name,
         #                           summary="Creating redirect page for {}".format(wiki_page_name))
-        create_wiki_page(page_name=wiki_page_name, summary="Created from primo", content=content)
+        create_wiki_page(site, page_name=wiki_page_name, summary="Created from primo", content=content)
 
     return content
