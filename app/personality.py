@@ -195,7 +195,7 @@ def create_page_from_node(person_node, records_list, debug=None, create_category
 
     if notes:
         content += CR
-        content += "".join(note['a'] + BR for note in notes if note['a'] != "LCN")
+        content += "".join(note['a'] + BR for note in notes if note.get('a') and note.get('a') != "LCN")
 
     IMAGES_DESC.append('|}')
 
