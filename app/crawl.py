@@ -1,5 +1,6 @@
 import os
 import sys
+import traceback
 
 sys.path.append(os.path.join(os.getcwd(), '..'))
 
@@ -25,39 +26,44 @@ for person_nodes in authorities:
         person_id = person_node['id']
         authority_index += 1
         print("%s / %s. : %s " % (authority_index, total_authorities, person_id), end="")
-        print(person_node['person_name_heb'])
-        person_json = json.loads(person_node['data'])
-        print(person_json)
-        records = graph.cypher.execute('match (p:Person {id:"' + person_id + '"})-[r]-(node) return type(r) as rel_type, node')
-        records_list = {'author_of' : {}, 'subject_of' : {}, 'portrait_of' : {}}
-        print("%s records" % len(records))
-        for record in records:
-            record_data = eval(record.node['data'])
-            record_control = record_data['control']
-            record_display = record_data['display']
-            record_type = record_display['type']
-            record_links = record_data['links']
-            record_notes = record_display.get('lds05',[""])
-            if type(record_notes) is str:
-                record_notes = [record_notes]
-            record_notes = "<br>".join(record_notes)
-            record_fields = {
-                'nnl' : record_control['sourcerecordid'],
-                'nnl_prefix' : record_control['sourceid'],
-                'title' : record.node['title'],
-                'description' : record.node['title'], # TODO: same as title?
-                'date' : record_display.get('creationdate', 'לא ידוע'),
-                'notes' : record_notes,
-                'rosetta' : record_links.get('linktorsrc',''),
-                'fl' : record.node['fl'],
-                'language' : record_display.get('language','heb')
-            }
-            rel_type = record.rel_type # either author_of or subject_of
-            # create_page_from_dictionary(record_dict)
-            if record_type not in records_list[rel_type]:
-                records_list[rel_type][record_type] = []
-            records_list[rel_type][record_type].append(record_fields)
-        create_page_from_node(person_node, records_list, site=wiki_site)
+        try:
+            #print(person_node['person_name_heb'])
+            person_json = json.loads(person_node['data'])
+            #print(person_json)
+            records = graph.cypher.execute('match (p:Person {id:"' + person_id + '"})-[r]-(node) return type(r) as rel_type, node')
+            records_list = {'author_of' : {}, 'subject_of' : {}, 'portrait_of' : {}}
+            print("%s records" % len(records))
+            for record in records:
+                record_data = eval(record.node['data'])
+                record_control = record_data['control']
+                record_display = record_data['display']
+                record_type = record_display['type']
+                record_links = record_data['links']
+                record_notes = record_display.get('lds05',[""])
+                if type(record_notes) is str:
+                    record_notes = [record_notes]
+                record_notes = "<br>".join(record_notes)
+                record_fields = {
+                    'nnl' : record_control['sourcerecordid'],
+                    'nnl_prefix' : record_control['sourceid'],
+                    'title' : record.node['title'],
+                    'description' : record.node['title'], # TODO: same as title?
+                    'date' : record_display.get('creationdate', 'לא ידוע'),
+                    'notes' : record_notes,
+                    'rosetta' : record_links.get('linktorsrc',''),
+                    'fl' : record.node['fl'],
+                    'language' : record_display.get('language','heb')
+                }
+                rel_type = record.rel_type # either author_of or subject_of
+                # create_page_from_dictionary(record_dict)
+                if record_type not in records_list[rel_type]:
+                    records_list[rel_type][record_type] = []
+                records_list[rel_type][record_type].append(record_fields)
+            create_page_from_node(person_node, records_list, site=wiki_site)
+        except Exception as e:
+            print("Exception")
+            print(e)
+            traceback.print_exc()
             # try:
             #     create_page_from_node(person_node, records_list)
             # except Exception as e:
