@@ -11,11 +11,11 @@ ALEF_LINK = "http://aleph.nli.org.il/F?func=direct&local_base={}&doc_number={}"
 WIKI_LINK = "[[{}|{}]]"  # first the link then the display text
 AUTHORITY_ID_PATTERN = "\$\$D(.*)\$\$E(.*)\$\$I(.*)\$\$P"  # e.g. "$$Dרכטר, יוני, 1951-$$Eרכטר, יוני, 1951-$$INNL10000110663$$PY M"
 # view online - is the template for placing the thumbnail and view online links in an item page
-VIEW_ONLINE = '{| class="wikitable" style="margin-left:0px;margin-right:auto"' + \
-'| width="120" height="120" style="vertical-align: middle; text-align: center" | [http://rosetta.nli.org.il/delivery/DeliveryManagerServlet?dps_pid={IE} <img src="http://rosetta.nli.org.il/delivery/DeliveryManagerServlet?dps_pid={IE}&dps_func=thumbnail" style="max-height:150px; max-width: 150px"/>]' + \
-'|-' + \
-'|{title}' + \
-'|}'
+VIEW_ONLINE = '{| class="wikitable" style="margin-left:0px;margin-right:auto"' + CR + \
+'| width="120" height="120" style="vertical-align: middle; text-align: center" | [http://rosetta.nli.org.il/delivery/DeliveryManagerServlet?dps_pid={IE} <img src="http://rosetta.nli.org.il/delivery/DeliveryManagerServlet?dps_pid={IE}&dps_func=thumbnail" style="max-height:150px; max-width: 150px"/>]' + CR + \
+'|-' + CR + \
+'|{title}' + CR + \
+'|}' + CR
 
 
 month_num_to_heb_name = {
@@ -45,7 +45,7 @@ def date8_to_heb_date(date8):
     if len(date8) == 0:
         return ""
     year = date8[0:4]
-    if len(date8) == 4:
+    if len(date8) <= 4:
         return year
     month = month_num_to_heb_name[date8[4:6]]
     if len(date8) == 6:
@@ -240,6 +240,7 @@ def create_page_from_dictionary(item_dict, debug=None, create_category_pages=Fal
         if thumb_value:
             view_online = VIEW_ONLINE
             view_online = view_online.replace('{IE}',thumb_value[0])
+            view_online = view_online.replace('{title}', title)
     creationdate = display.get('creationdate')
     ispartof = display.get('ispartof')
     performed_by = display.get('lds35')  # list
