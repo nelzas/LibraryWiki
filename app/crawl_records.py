@@ -1,5 +1,6 @@
 import os
 import sys
+import traceback
 
 sys.path.append(os.path.join(os.getcwd(), '..'))
 
@@ -32,6 +33,10 @@ while True:
             record_data = eval(record['data'])
             if record_data.get('control'):
                 print(str("{}. {}".format(record_count, record_data['control']['recordid'])))
-                create_page_from_dictionary(record_data, site=wiki_site)
+                try:
+                    create_page_from_dictionary(record_data, site=wiki_site)
+                except Exception as e:
+                    print (e)
+                    traceback.print_exc()
 
 print("Done. %s records processed" % record_count)
