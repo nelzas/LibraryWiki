@@ -20,8 +20,9 @@ class Results:
 
     @property
     def _search_url(self):
-        return 'http://' + PRIMO + '/PrimoWebServices/xservice/search/brief?institution=NNL' \
+        url = 'http://' + PRIMO + '/PrimoWebServices/xservice/search/brief?institution=NNL' \
                                    '&query=any,contains,"{}"&indx={}&bulkSize={}&json=true'
+        return url
 
     @property
     def entity_type(self):
@@ -56,7 +57,9 @@ class Results:
         retries = 0
         while True:
             try:
-                res = get(self._search_url.format(self.query, 1 + (self.page - 1) * self.count, self.count))
+                url = self._search_url.format(self.query, 1 + (self.page - 1) * self.count, self.count)
+                print(url)
+                res = get(url)
             except:
                 if retries > 10:
                     raise StopIteration
@@ -122,7 +125,6 @@ def get_authorities(from_id=0, to_id=999999999, list_authorities=[]):
             buffer += line
             if line.strip() == "</record>":
                 if from_id <= auth_id <= to_id and (len(list_authorities) == 0 or auth_id in list_authorities):
-                    print(auth_id)
                     record = xmltodict.parse(buffer)['record']
                     result = {k: record[k] for k in record if k == "controlfield" or k == "datafield"}
                     if result.get('datafield'):

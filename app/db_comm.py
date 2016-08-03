@@ -1,6 +1,7 @@
 import py2neo
 import re
 import os
+import traceback
 import sys
 import py2neo.cypher
 
@@ -33,7 +34,7 @@ def set_entities(entities):
     tx = graph.cypher.begin()
     for i, entity in enumerate(entities):
         tx.append(MergeNode(entity.labels[0], "id", entity.properties["id"]).set(*entity.labels, **entity.properties))
-        print(i)
+        print(i, entity.properties["id"])
         if i % 200 == 0:
             tx.commit()
             tx = graph.cypher.begin()
@@ -76,19 +77,27 @@ def authority_photos(authority):
 
 def create_records_authorities_relationships():
     records = graph.cypher.execute("match (n:Record) return n as node, n.data as data")
+    i = 0
     for record in records:
-        # record.data may contain more than one value
-        if type(record.data) is str:
-            dat = eval(record.data)
-        else:
-            dat = eval(record.data[0])
-        if not record.data or not dat.get('browse'):
-            continue
-        authors, subjects = authorities_of_record(dat.get('browse'))
-        if authors:
-            create_relationship(authors, record.node, 'author_of')
-        if subjects:
-            create_relationship(subjects, record.node, 'subject_of')
+        try:
+            # record.data may contain more than one value
+            if type(record.data) is str:
+                dat = eval(record.data)
+            else:
+                dat = eval(record.data[0])
+            if not record.data or not dat.get('browse'):
+                continue
+            i = i + 1
+            print(i, dat.get('control').get('recordid'))
+            authors, subjects = authorities_of_record(dat.get('browse'))
+            if authors:
+                create_relationship(authors, record.node, 'author_of')
+            if subjects:
+                create_relationship(subjects, record.node, 'subject_of')
+        except Exception as e:
+            print(e)
+            traceback.print_exc()
+
     graph.push()
 
 
@@ -115,9 +124,10 @@ def extract_authority(relationship, authorities):
 
 
 set_entities(get_authorities(from_id=0))
-# set_entities(Results('בן גוריון'))
-# create_records_authorities_relationships()
-# set_portraits()
-# set_photos()
-# graph.match()
+set_entities(Results('NNL_ALEPH'))
+print("Done getting records")
+create_records_authorities_relationships()
+set_portraits()
+set_photos()
+graph.match()
 print("done")

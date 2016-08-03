@@ -25,9 +25,9 @@ for person_nodes in authorities:
     for person_node in person_nodes:
         person_id = person_node['id']
         authority_index += 1
-        print("%s / %s. : %s " % (authority_index, total_authorities, person_id), end="")
+        print("%s / %s. : %s " % (authority_index, total_authorities, person_id), end="", flush=True)
         try:
-            #print(person_node['person_name_heb'])
+            #print(person_node['person_name_heb'].encode('utf-8'))
             person_json = json.loads(person_node['data'])
             #print(person_json)
             records = graph.cypher.execute('match (p:Person {id:"' + person_id + '"})-[r]-(node) return type(r) as rel_type, node')
@@ -61,7 +61,6 @@ for person_nodes in authorities:
                 records_list[rel_type][record_type].append(record_fields)
             create_page_from_node(person_node, records_list, site=wiki_site)
         except Exception as e:
-            print("Exception")
             print(e)
             traceback.print_exc()
             # try:
