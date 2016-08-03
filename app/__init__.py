@@ -1,4 +1,4 @@
-# type, definitive artice type, creation verb
+# type, definitive artice type, creation verb, category
 type_dict = {
     'dissertation': ('חיבור מדעי', 'החיבור המדעי', 'נכתב', 'print'),
     'manuscript': ('כתב יד', 'כתב היד', 'נכתב', 'print'),
@@ -21,5 +21,6 @@ type_dict = {
     'database': ('מאגר מידע', 'מאגר המידע', 'נוצר', 'other'),
     'video': ('וידאו', 'הוידאו', 'נוצר', 'video'),
     'cdrom': ('דיסק', 'הדיסק', 'נוצר', 'audio'),
-    'other': ('פריט', 'הפריט', 'נוצר', 'other')
+    'other': ('פריט', 'הפריט', 'נוצר', 'other'),
+    'sheet': ('אוסף', 'האוסף', 'נוצר', 'other')
 }
