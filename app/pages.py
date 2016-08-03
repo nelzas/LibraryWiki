@@ -196,6 +196,8 @@ def create_page_from_dictionary(item_dict, debug=None, create_category_pages=Fal
     display = item_dict['display']
     try:
         title = display['title']
+        if type(title) is list:
+            title = title(0) # getting the main title short, the full title is displayed in another location in the page
     except:
         title = trim(item_dict['sort']['title'])
     item_type = display['type'].lower()
