@@ -43,7 +43,7 @@ def trim_last(line, chars_to_remove):
     return clean_line
 
 
-def handle_names(subfields):
+def handle_person(subfields):
     subfield_a = subfields.get('a') or ""
     subfield_b = subfields.get('b') or ""
     subfield_c = subfields.get('c') or ""
@@ -85,9 +85,37 @@ def absolute_name(subfield_a, subfield_b, subfield_c, subfield_d, lang):
     return {"person_name_absolute": absolute.strip()}
 
 
-def parse_lang(subfields):
+def handle_location(subfields):
     return {"{}_{}".format('location_name', subfields['9']): subfields['a']}
 
+def handle_corporation(subfields):
+    return {"{}_{}".format('corporation_name', subfields['9']): subfields['a']}
+
+def handle_topic(subfields):
+    return {"{}_{}".format('topic_name', subfields['9']): subfields['a']}
+
+def handle_subdivision(subfields):
+    result = {}
+
+    lang = subfields.get('9')
+
+    subfield_form_subdivision = subfields.get('v')
+    if subfield_form_subdivision:
+        result["form_subdivisin_"+lang] = subfield_form_subdivision
+
+    subfield_general_subdivision = subfields.get('x')
+    if subfield_general_subdivision:
+        result["general_subdivisin_"+lang] = subfield_general_subdivision
+
+    subfield_chronological_subdivision = subfields.get('y') or ""
+    if subfield_chronological_subdivision:
+        result["chronological_subdivision"+lang] = subfield_chronological_subdivision
+
+    subfield_geographical_subdivision = subfields.get('z') or ""
+    if subfield_geographical_subdivision:
+        result["geographical_subdivision"+lang] = subfield_geographical_subdivision
+
+    return result
 
 def parse_dates(subfields):
     dates = [None, None]
@@ -119,8 +147,10 @@ def parse_tag(tag, subfields):
 
 
 CODES = {
-    '100': handle_names,
-    '151': parse_lang,
+    '100': handle_person, # person authorities
+    '110': handle_corporation, # corporation authorities
+    '150': handle_topic, # topic authorities
+    '151': handle_location, # location authority
     '046': parse_dates,
     '371': parse_address,
     '374': partial(parse_tag, 'occupation'),
