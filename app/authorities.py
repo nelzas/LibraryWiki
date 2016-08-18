@@ -51,6 +51,7 @@ def handle_person(subfields):
     lang = subfields['9']
     result = parse_name(subfield_a, subfield_b, subfield_c, lang)
     result.update(absolute_name(subfield_a, subfield_b, subfield_c, subfield_d, lang))
+    result.update(handle_subdivision(subfeilds))
     return result
 
 
@@ -86,15 +87,29 @@ def absolute_name(subfield_a, subfield_b, subfield_c, subfield_d, lang):
 
 
 def handle_location(subfields):
-    return {"{}_{}".format('location_name', subfields['9']): subfields['a']}
+    result = {"{}_{}".format('location_name', subfields['9']): subfields['a']}
+    result.update(handle_subdivision(subfields))
+    return result
+
 
 def handle_corporation(subfields):
-    return {"{}_{}".format('corporation_name', subfields['9']): subfields['a']}
+    result = {"{}_{}".format('corporation_name', subfields['9']): subfields['a']}
+    result.update(handle_subdivision(subfields))
+    return result
+
 
 def handle_topic(subfields):
-    return {"{}_{}".format('topic_name', subfields['9']): subfields['a']}
+    result = {"{}_{}".format('topic_name', subfields['9']): subfields['a']}
+    result.update(handle_subdivision(subfields))
+    return result
+
 
 def handle_subdivision(subfields):
+    """
+     set db fields for authoritiy records with subdivisions (subfields v/x/y/z of name fields(1xx))
+    :param subfields: the entire name group subfields (of a specific language)
+    :return:
+    """
     result = {}
 
     lang = subfields.get('9')
