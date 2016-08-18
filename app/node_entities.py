@@ -19,10 +19,9 @@ class Entity:
 
 class Authority(Entity):
     def _build_properties(self):
+        # assign id + dumps the entire xml record in 'data' field
         properties = {'data': json.dumps(self.data), 'id': self.data['001'][0]['#text']}
-        for tag, subfields in self.data.items():
-            for subfield in subfields:
-                CODES.get(tag) and properties.update(CODES[tag](subfield))
+        # assigns type
         if '100' in self.data:
             properties['type'] = 'Person'
         elif '151' in self.data:
@@ -31,6 +30,10 @@ class Authority(Entity):
             properties['type'] = 'Topic '
         else:
             properties['type'] = None
+        for tag, subfields in self.data.items():
+            for subfield in subfields:
+                CODES.get(tag) and properties.update(CODES[tag](subfield))
+
         return properties
 
     def _build_labels(self):
