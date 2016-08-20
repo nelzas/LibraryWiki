@@ -96,7 +96,7 @@ def create_records_authorities_relationships():
                 create_relationship(subjects, record.node, 'subject_of')
         except Exception as e:
             print(e)
-            traceback.print_exc()
+            traceback.print_exc(file=sys.stdout)
 
     graph.push()
 

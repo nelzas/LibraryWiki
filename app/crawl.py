@@ -62,7 +62,7 @@ for person_nodes in authorities:
             create_page_from_node(person_node, records_list, site=wiki_site)
         except Exception as e:
             print(e)
-            traceback.print_exc()
+            traceback.print_exc(file=sys.stdout)
             # try:
             #     create_page_from_node(person_node, records_list)
             # except Exception as e:
