@@ -51,7 +51,7 @@ def handle_person(subfields):
     lang = subfields['9']
     result = parse_name(subfield_a, subfield_b, subfield_c, lang)
     result.update(absolute_name(subfield_a, subfield_b, subfield_c, subfield_d, lang))
-    result.update(handle_subdivision(subfeilds))
+    result.update(handle_subdivision(subfields))
     return result
 
 
