@@ -24,6 +24,7 @@ while True:
     records = graph.cypher.execute('match (p:Person)-[]-(r) with p, r, count(r) as rels where exists(p.person_name_heb) and rels > 0 return r skip {} limit {}'.format(skip, PAGE_SIZE))
     # records = graph.cypher.execute('match (p:Person)-[]-(r) with p, r, count(r) as rels where rels > 0 return r skip {} limit {}'.format(skip, PAGE_SIZE))
     # records = graph.cypher.execute('match (r:Person) return r skip {} limit {}'.format(skip, PAGE_SIZE))
+    # records = graph.cypher.execute('match (r:Record {id:"NNL_ALEPH001975996"}) return r')
     if not len(records):
         break
     page_number += 1
