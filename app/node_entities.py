@@ -27,7 +27,7 @@ class Authority(Entity):
         elif '151' in self.data:
             properties['type'] = 'Location'
         elif '150' in self.data:
-            properties['type'] = 'Topic '
+            properties['type'] = 'Topic'
         else:
             properties['type'] = None
         for tag, subfields in self.data.items():
