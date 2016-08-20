@@ -116,19 +116,19 @@ def handle_subdivision(subfields):
 
     subfield_form_subdivision = subfields.get('v')
     if subfield_form_subdivision:
-        result["form_subdivisin_"+lang] = subfield_form_subdivision
+        result["form_subdivisin_" + lang] = subfield_form_subdivision
 
     subfield_general_subdivision = subfields.get('x')
     if subfield_general_subdivision:
-        result["general_subdivisin_"+lang] = subfield_general_subdivision
+        result["general_subdivisin_" + lang] = subfield_general_subdivision
 
     subfield_chronological_subdivision = subfields.get('y') or ""
     if subfield_chronological_subdivision:
-        result["chronological_subdivision"+lang] = subfield_chronological_subdivision
+        result["chronological_subdivision_" + lang] = subfield_chronological_subdivision
 
     subfield_geographical_subdivision = subfields.get('z') or ""
     if subfield_geographical_subdivision:
-        result["geographical_subdivision"+lang] = subfield_geographical_subdivision
+        result["geographical_subdivision_" + lang] = subfield_geographical_subdivision
 
     return result
 
