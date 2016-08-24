@@ -34,7 +34,7 @@ def set_entities(entities):
     tx = graph.cypher.begin()
     for i, entity in enumerate(entities):
         tx.append(MergeNode(entity.labels[0], "id", entity.properties["id"]).set(*entity.labels, **entity.properties))
-        print(i, entity.properties["id"])
+        print(i, entity.properties["id"], flush=True)
         if i % 200 == 0:
             tx.commit()
             tx = graph.cypher.begin()
@@ -88,14 +88,14 @@ def create_records_authorities_relationships():
             if not record.data or not dat.get('browse'):
                 continue
             i = i + 1
-            print(i, dat.get('control').get('recordid'))
+            print(i, dat.get('control').get('recordid'), flush=True)
             authors, subjects = authorities_of_record(dat.get('browse'))
             if authors:
                 create_relationship(authors, record.node, 'author_of')
             if subjects:
                 create_relationship(subjects, record.node, 'subject_of')
         except Exception as e:
-            print(e)
+            print(e, flush=True)
             traceback.print_exc(file=sys.stdout)
 
     graph.push()
@@ -125,9 +125,9 @@ def extract_authority(relationship, authorities):
 
 set_entities(get_authorities(from_id=0))
 set_entities(Results('NNL_ALEPH'))
-print("Done getting records")
+print("Done getting records", flush=True)
 create_records_authorities_relationships()
 set_portraits()
 set_photos()
 graph.match()
-print("done")
+print("done", flush=True)
