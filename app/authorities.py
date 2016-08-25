@@ -27,7 +27,7 @@ PUNCTUATION = {',', '.', ':', '!', ';', '?'}
 BRACKETS = {'<', '>'}
 PUNCTUATION_AND_BRACKETS = PUNCTUATION.copy()
 PUNCTUATION_AND_BRACKETS.update(BRACKETS)
-
+PRIMARY = "primary"
 
 def remove_all(line, chars_to_remove):
     clean_line = line
@@ -106,28 +106,34 @@ def handle_topic(subfields):
 
 def handle_subdivision(subfields):
     """
-     set db fields for authoritiy records with subdivisions (subfields v/x/y/z of name fields(1xx))
+     Set db fields for authoritiy records with subdivisions (subfields v/x/y/z of name fields(1xx)).
+     If no subdivisions then set "primary" to True, otherwise set it to False.
     :param subfields: the entire name group subfields (of a specific language)
     :return:
     """
     result = {}
+    result[PRIMARY] = True
 
     lang = subfields.get('9')
 
     subfield_form_subdivision = subfields.get('v')
     if subfield_form_subdivision:
-        result["form_subdivisin_" + lang] = subfield_form_subdivision
+        result[PRIMARY] = False
+        result["form_subdivision_" + lang] = subfield_form_subdivision
 
     subfield_general_subdivision = subfields.get('x')
     if subfield_general_subdivision:
-        result["general_subdivisin_" + lang] = subfield_general_subdivision
+        result[PRIMARY] = False
+        result["general_subdivision_" + lang] = subfield_general_subdivision
 
     subfield_chronological_subdivision = subfields.get('y') or ""
     if subfield_chronological_subdivision:
+        result[PRIMARY] = False
         result["chronological_subdivision_" + lang] = subfield_chronological_subdivision
 
     subfield_geographical_subdivision = subfields.get('z') or ""
     if subfield_geographical_subdivision:
+        result[PRIMARY] = False
         result["geographical_subdivision_" + lang] = subfield_geographical_subdivision
 
     return result
