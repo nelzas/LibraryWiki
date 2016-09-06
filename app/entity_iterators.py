@@ -6,9 +6,77 @@ from app.authorities import to_list
 import xmltodict
 from app.node_entities import Authority, Record, Photo, Portrait
 from app.settings import DUMP_PATH
+import py2neo
+from app.settings import *
 
 PRIMO = 'primo.nli.org.il'
+PAGED_CYPHER = "{} skip {} limit {}"
 
+class N4JQuery:
+    def __init__(self, cypher_query, page_size=200):
+        print("__init__")
+        self.count = page_size
+        self.cypher = cypher_query
+        self.index = 0
+        self.page = 1
+        self.graph = self._graph()
+        self.results = self._get_results()
+
+    def _graph(self):
+        py2neo.authenticate(NEO4J_URL, NEO4J_USER, NEO4J_PASSWORD)
+        return py2neo.Graph('http://' + NEO4J_URL + NEO4J_GRAPH)
+
+    def __iter__(self):
+        print("__iter__")
+        return self
+
+    def __next__(self):
+        print("__next__")
+        if self.index < self.count:
+            try:
+                res = self.results[self.index]
+            except IndexError:
+                raise StopIteration
+            self.index += 1
+            return N4JQuery
+        self.page += 1
+        self.index = 0
+        self.results = self._get_results()
+        return self.__next__()
+
+    def _get_results(self):
+        print("_get_results")
+        res = self._query()
+        if res:
+            return to_list(res)
+        print("Done")
+        return []
+
+    def _query(self):
+        retries = 0
+        while True:
+            try:
+                skip = self.count * (self.page - 1)
+                query = PAGED_CYPHER.format(self.cypher, skip, self.count)
+                print(query)
+                res = self.graph.cypher.execute(query)
+                # print(res)
+            except:
+                if retries > 10:
+                    raise StopIteration
+                retries += 1
+                print('connection issue...')
+                sleep(5)
+                continue
+            break
+        if retries:
+            print('all fine!')
+        # TODO: other stop condition
+        return res
+
+    def __len__(self):
+        print("__len__")
+        return len(self._query())
 
 class Results:
     def __init__(self, query, max_results=200):
