@@ -14,7 +14,6 @@ PAGED_CYPHER = "{} skip {} limit {}"
 
 class N4JQuery:
     def __init__(self, cypher_query, page_size=200):
-        print("__init__")
         self.count = page_size
         self.cypher = cypher_query
         self.index = 0
@@ -27,29 +26,25 @@ class N4JQuery:
         return py2neo.Graph('http://' + NEO4J_URL + NEO4J_GRAPH)
 
     def __iter__(self):
-        print("__iter__")
         return self
 
     def __next__(self):
-        print("__next__")
         if self.index < self.count:
             try:
                 res = self.results[self.index]
             except IndexError:
                 raise StopIteration
             self.index += 1
-            return N4JQuery
+            return res
         self.page += 1
         self.index = 0
         self.results = self._get_results()
         return self.__next__()
 
     def _get_results(self):
-        print("_get_results")
         res = self._query()
         if res:
-            return to_list(res)
-        print("Done")
+            return res
         return []
 
     def _query(self):
@@ -60,7 +55,6 @@ class N4JQuery:
                 query = PAGED_CYPHER.format(self.cypher, skip, self.count)
                 print(query)
                 res = self.graph.cypher.execute(query)
-                # print(res)
             except:
                 if retries > 10:
                     raise StopIteration
@@ -75,7 +69,6 @@ class N4JQuery:
         return res
 
     def __len__(self):
-        print("__len__")
         return len(self._query())
 
 class Results:
@@ -113,8 +106,9 @@ class Results:
         return self.__next__()
 
     def _get_results(self):
-        if self._search().get('DOC'):
-            return [item['PrimoNMBib']['record'] for item in to_list(self._search()['DOC']) if
+        search = self._search()
+        if search.get('DOC'):
+            return [item['PrimoNMBib']['record'] for item in to_list(search['DOC']) if
                     item.get('PrimoNMBib') and item['PrimoNMBib'].get('record')]
         return []
 
