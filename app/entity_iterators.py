@@ -161,7 +161,7 @@ class Portraits(Photos):
 
     @property
     def _search_url(self):
-        return 'http://primo.nli.org.il/PrimoWebServices/xservice/search/brief?institution=NNL' \
+        return 'http://' + PRIMO + '/PrimoWebServices/xservice/search/brief?institution=NNL' \
                '&loc=local,scope:(NNL01_Schwad)&query=facet_topic,exact,"{} Y M–Portraits"&sortField=&indx={}' \
                '&bulkSize={}&json=true'
 
