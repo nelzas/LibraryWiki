@@ -133,7 +133,6 @@ class Results:
             print('all fine!')
         if res.status_code == 500:
             raise StopIteration
-        return res.json()['SEGMENTS']['JAGROOT']['RESULT']['DOCSET']
         try:
             return res.json()['SEGMENTS']['JAGROOT']['RESULT']['DOCSET']
         except:
