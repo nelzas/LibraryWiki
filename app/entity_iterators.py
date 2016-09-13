@@ -120,7 +120,6 @@ class Results:
         while True:
             try:
                 url = self._search_url.format(self.query, 1 + (self.page - 1) * self.count, self.count)
-                print(url)
                 res = get(url)
             except:
                 if retries > 10:
@@ -148,7 +147,7 @@ class Photos(Results):
 
     @property
     def _search_url(self):
-        return 'http://primo.nli.org.il/PrimoWebServices/xservice/search/brief?institution=NNL' \
+        return 'http://' + PRIMO + '/PrimoWebServices/xservice/search/brief?institution=NNL' \
                '&loc=local,scope:(NNL_PIC)&query=facet_topic,exact,"{} M"&sortField=&indx={}&bulkSize={}&json=true'
 
     @property
