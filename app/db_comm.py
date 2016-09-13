@@ -6,7 +6,7 @@ import sys
 import py2neo.cypher
 
 sys.path.append(os.path.join(os.getcwd(), '..'))
-from app.entity_iterators import Portraits, Photos, get_authorities, Results
+from app.entity_iterators import Portraits, Photos, get_authorities, Results, N4JQuery
 from app.settings import *
 from py2neo.packages.httpstream import http
 from py2neo.cypher import MergeNode
@@ -41,16 +41,15 @@ def set_entities(entities):
 
 
 def set_portraits():
-    people = graph.cypher.execute(
-        "match (n:Person) where exists(n.person_name_absolute) return n.person_name_absolute as name, n as node")
     # people = graph.cypher.execute(
-    # "match (n:Person) where n.id = '000121498' return n.person_name_heb as name, n as node")
-    for person in people:
+    # "match (n:Person) where n.id = '000121498' return n as node")
+    for i, person in enumerate(N4JQuery("match (n:Person) where exists(n.person_name_absolute) return n as node")):
         authority_portrait(person)
 
 
 def authority_portrait(authority):
-    query = authority.name
+    query = authority.node.properties["person_name_absolute"]
+    print("Portrait {} : {}".format(authority.node.properties["id"], query), flush=True)
     portraits = Portraits(query)
     for portrait in portraits:
         portrait_node = create_entity(portrait)
@@ -59,16 +58,15 @@ def authority_portrait(authority):
 
 
 def set_photos():
-    people = graph.cypher.execute(
-        "match (n:Person) where exists(n.person_name_heb) return n.person_name_heb as name, n as node")
     # people = graph.cypher.execute(
-    # "match (n:Person) where n.id = '000121498' return n.person_name_heb as name, n as node")
-    for person in people:
+    # "match (n:Person) where n.id = '000121498' return n as node")
+    for i, person in enumerate(N4JQuery("match (n:Person) where exists(n.person_name_heb) return n as node")):
         authority_photos(person)
 
 
 def authority_photos(authority):
-    query = authority.name
+    query = authority.node.properties["person_name_heb"]
+    print("Photo {} : {}".format(authority.node.properties["id"], query), flush=True)
     photos = Photos(query)
     for photo, _ in zip(photos, range(10)):
         portrait_node = create_entity(photo)
@@ -76,24 +74,25 @@ def authority_photos(authority):
 
 
 def create_records_authorities_relationships():
-    records = graph.cypher.execute("match (n:Record) return n as node, n.data as data")
-    i = 0
-    for record in records:
+    for i, record in enumerate(N4JQuery("match (n:Record) return n as node")):
         try:
-            # record.data may contain more than one value
-            if type(record.data) is str:
-                dat = eval(record.data)
+            data = record.node.properties["data"]
+            # data may contain more than one value
+            if type(data) is str:
+                dat = eval(data)
             else:
-                dat = eval(record.data[0])
-            if not record.data or not dat.get('browse'):
+                dat = eval(data[0])
+            if not data or not dat.get('browse'):
                 continue
-            i = i + 1
-            print(i, dat.get('control').get('recordid'), flush=True)
+            print(i, dat.get('control').get('recordid'), end="")
             authors, subjects = authorities_of_record(dat.get('browse'))
             if authors:
+                print(" Authors:", authors, end="")
                 create_relationship(authors, record.node, 'author_of')
             if subjects:
+                print(" Subjects:", subjects, end="")
                 create_relationship(subjects, record.node, 'subject_of')
+            print(flush=True)
         except Exception as e:
             print(e, flush=True)
             traceback.print_exc(file=sys.stdout)
@@ -121,7 +120,6 @@ def extract_authority(relationship, authorities):
     find_id = re.compile(r"INNL\d{11}\$\$").search
     return authorities.get(relationship) and {find_id(authority).group()[6:-2] for authority in
                                               authorities[relationship] if find_id(authority)}
-
 
 set_entities(get_authorities(from_id=0))
 set_entities(Results('NNL_ALEPH'))
