@@ -7,6 +7,7 @@ sys.path.append(os.path.join(os.getcwd(), '..'))
 from app.settings import *
 from app.pages import create_page_from_dictionary
 from app.personality import create_page_from_node
+from app.entity_iterators import N4JQuery
 import mwclient
 import py2neo
 import json
@@ -15,20 +16,17 @@ wiki_site = mwclient.Site(WIKI_SITE, path=WIKI_PATH)
 wiki_site.login(WIKI_USER, WIKI_PASSWORD)
 py2neo.authenticate(NEO4J_URL, NEO4J_USER, NEO4J_PASSWORD)
 graph = py2neo.Graph('http://' + NEO4J_URL + NEO4J_GRAPH)
-authorities = graph.cypher.execute('match (n:Person) where exists(n.person_name_heb) return n')
+authorities = graph.cypher.execute('match (n:Person) where exists(n.person_name_heb) return count(n) as count')
 #authorities = graph.cypher.execute("match (n:Person) where n.id = '000017959' return n")
 # authorities = graph.cypher.execute('match (p:Person)-[]-(r) with p, count(r) as rels where exists(p.person_name_heb) and rels > 0 return p')
 
-total_authorities = len(authorities)
-authority_index = 0
-for person_nodes in authorities:
-    for person_node in person_nodes:
-        person_id = person_node['id']
-        authority_index += 1
+total_authorities = authorities.records[0].count
+for authority_index, person_node in enumerate(N4JQuery('match (n:Person) where exists(n.person_name_heb) return n')):
+        person_id = person_node.n['id']
         print("%s / %s. : %s " % (authority_index, total_authorities, person_id), end="", flush=True)
         try:
-            #print(person_node['person_name_heb'].encode('utf-8'))
-            person_json = json.loads(person_node['data'])
+            #print(person_node.n['person_name_heb'].encode('utf-8'))
+            person_json = json.loads(person_node.n['data'])
             #print(person_json)
             records = graph.cypher.execute('match (p:Person {id:"' + person_id + '"})-[r]-(node) return type(r) as rel_type, node')
             records_list = {'author_of' : {}, 'subject_of' : {}, 'portrait_of' : {}}
@@ -59,7 +57,7 @@ for person_nodes in authorities:
                 if record_type not in records_list[rel_type]:
                     records_list[rel_type][record_type] = []
                 records_list[rel_type][record_type].append(record_fields)
-            create_page_from_node(person_node, records_list, site=wiki_site)
+            create_page_from_node(person_node.n, records_list, site=wiki_site)
         except Exception as e:
             print(e)
             traceback.print_exc(file=sys.stdout)
