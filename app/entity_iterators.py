@@ -121,11 +121,12 @@ class Results:
             try:
                 url = self._search_url.format(self.query, 1 + (self.page - 1) * self.count, self.count)
                 res = get(url)
-            except:
+                sleep(4)
+            except Exception as ex:
                 if retries > 10:
-                    raise StopIteration
+                    raise ex
                 retries += 1
-                print('connection issue...')
+                print('connection issue...', ex)
                 sleep(5)
                 continue
             break
