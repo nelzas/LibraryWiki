@@ -2,7 +2,7 @@ beautifulsoup4==4.4.1
 decorator==4.0.4
 ipython==4.0.0
 ipython-genutils==0.1.0
-lxml==3.5.0
+lxml==3.6.4
 mwclient==0.8.2
 path.py==8.1.2
 pexpect==4.0.1
