@@ -170,8 +170,8 @@ class Portraits(Photos):
         return Portrait
 
 
-def get_authorities(from_id=0, to_id=999999999, list_authorities=[]):
-    with open(DUMP_PATH, encoding='utf8') as f:
+def get_authorities(from_id=0, to_id=999999999, entities_file=DUMP_PATH, list_authorities=[]):
+    with open(entities_file, encoding='utf8') as f:
         buffer = ''
         auth_id = 0
         line = f.readline()
