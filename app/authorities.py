@@ -185,12 +185,13 @@ def to_list(item):
     return item if type(item) is list else [item]
 
 
-def convert_dict(d):
+def convert_dict(d, xml_prefix):
     tags = defaultdict(list)
-    for tag in d['datafield'] + d['controlfield']:
+    for tag in d["{xml_prefix}controlfield".format(xml_prefix=xml_prefix)] + \
+               d["{xml_prefix}datafield".format(xml_prefix=xml_prefix)]:
         tags[tag['@tag']].append({k: v for k, v in tag.items() if k != '@tag' and k != 'subfield'})
-        if not tag.get('subfield'):
+        if not tag.get("{xml_prefix}subfield".format(xml_prefix=xml_prefix)):
             continue
-        for sub in to_list(tag['subfield']):
+        for sub in to_list(tag["{xml_prefix}subfield".format(xml_prefix=xml_prefix)]):
             tags[tag['@tag']][-1][sub['@code']] = sub['#text']
     return tags

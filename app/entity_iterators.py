@@ -169,8 +169,7 @@ class Portraits(Photos):
     def entity_type(self):
         return Portrait
 
-
-def get_authorities(from_id=0, to_id=999999999, entities_file=DUMP_PATH, list_authorities=[]):
+def get_authorities(from_id=0, to_id=999999999, entities_file=DUMP_PATH, list_authorities=[], xml_prefix=''):
     with open(entities_file, encoding='utf8') as f:
         buffer = ''
         auth_id = 0
@@ -180,17 +179,21 @@ def get_authorities(from_id=0, to_id=999999999, entities_file=DUMP_PATH, list_au
 
         for line in f:
             if not auth_id:
-                groups = re.match(r'  <controlfield tag="001">(\d*)</controlfield>', line)
+                groups = re.match(r'  <{xml_prefix}controlfield tag="001">(\d*)</{xml_prefix}controlfield>'.format(xml_prefix=xml_prefix), line)
                 if groups:
                     auth_id = int(groups.group(1))
             buffer += line
-            if line.strip() == "</record>":
+            if line.strip() == "</{xml_prefix}record>".format(xml_prefix=xml_prefix):
                 if from_id <= auth_id <= to_id and (len(list_authorities) == 0 or auth_id in list_authorities):
-                    record = xmltodict.parse(buffer)['record']
-                    result = {k: record[k] for k in record if k == "controlfield" or k == "datafield"}
-                    if result.get('datafield'):
+                    parsed_buf = xmltodict.parse(buffer, process_namespaces=False)
+                    prefixed_record_str = '{xml_prefix}record'.format(xml_prefix=xml_prefix)
+                    record = parsed_buf[prefixed_record_str]
+                    result = {k: record[k] for k in record if
+                                    k == "{xml_prefix}controlfield".format(xml_prefix=xml_prefix) or
+                                    k == "{xml_prefix}datafield".format(xml_prefix=xml_prefix)}
+                    if result.get('{xml_prefix}datafield'.format(xml_prefix=xml_prefix)):
                         try:
-                            yield Authority(app.authorities.convert_dict(result))
+                            yield Authority(app.authorities.convert_dict(result, xml_prefix))
                         except:
                             pass
                 elif auth_id > to_id:
