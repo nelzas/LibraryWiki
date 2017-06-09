@@ -193,5 +193,9 @@ def convert_dict(d, xml_prefix):
         if not tag.get("{xml_prefix}subfield".format(xml_prefix=xml_prefix)):
             continue
         for sub in to_list(tag["{xml_prefix}subfield".format(xml_prefix=xml_prefix)]):
-            tags[tag['@tag']][-1][sub['@code']] = sub['#text']
+            try:
+                tags[tag['@tag']][-1][sub['@code']] = sub['#text']
+            except KeyError as e:
+                e.args += ("trying to get field from sub:", sub, "from tag:", tag)
+                raise
     return tags
