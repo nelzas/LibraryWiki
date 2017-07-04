@@ -99,7 +99,11 @@ def handle_corporation(subfields):
 
 
 def handle_topic(subfields):
-    result = {"{}_{}".format('topic_name', subfields['9']): subfields['a']}
+    try:
+        result = {"{}_{}".format('topic_name', subfields['9']): subfields['a']}
+    except KeyError as e:
+        e.args += ("while getting topic info from subfields:", subfields)
+        raise
     result.update(handle_subdivision(subfields))
     return result
 
